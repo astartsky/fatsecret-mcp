@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getRequestToken, getAccessToken, AUTHORIZE_URL } from "../../methods/auth.js";
-import type { FatSecretConfig, OAuthTokenResponse, AccessTokenResponse } from "../../types.js";
+import type { FatSecretConfig } from "../../types.js";
+import type { OAuthTokenResponseParsed, AccessTokenResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -22,7 +23,7 @@ describe("getRequestToken", () => {
   });
 
   it("should get request token with default callback", async () => {
-    const mockResponse: OAuthTokenResponse = {
+    const mockResponse: OAuthTokenResponseParsed = {
       oauth_token: "request_token_123",
       oauth_token_secret: "request_secret_456",
       oauth_callback_confirmed: "true",
@@ -36,14 +37,17 @@ describe("getRequestToken", () => {
       "POST",
       "https://authentication.fatsecret.com/oauth/request_token",
       { oauth_callback: "oob" },
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
 
   it("should get request token with custom callback URL", async () => {
     const callbackUrl = "https://myapp.com/callback";
-    const mockResponse: OAuthTokenResponse = {
+    const mockResponse: OAuthTokenResponseParsed = {
       oauth_token: "token123",
       oauth_token_secret: "secret456",
     };
@@ -56,7 +60,10 @@ describe("getRequestToken", () => {
       "POST",
       "https://authentication.fatsecret.com/oauth/request_token",
       { oauth_callback: callbackUrl },
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -73,7 +80,10 @@ describe("getRequestToken", () => {
       "POST",
       expect.any(String),
       expect.any(Object),
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      expect.anything()
     );
   });
 
@@ -89,12 +99,15 @@ describe("getRequestToken", () => {
       expect.any(String),
       "https://authentication.fatsecret.com/oauth/request_token",
       expect.any(Object),
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      expect.anything()
     );
   });
 
   it("should handle callback confirmed response", async () => {
-    const mockResponse: OAuthTokenResponse = {
+    const mockResponse: OAuthTokenResponseParsed = {
       oauth_token: "token",
       oauth_token_secret: "secret",
       oauth_callback_confirmed: "true",
@@ -135,7 +148,7 @@ describe("getAccessToken", () => {
   });
 
   it("should exchange request token for access token", async () => {
-    const mockResponse: AccessTokenResponse = {
+    const mockResponse: AccessTokenResponseParsed = {
       oauth_token: "access_token_123",
       oauth_token_secret: "access_secret_456",
       user_id: "user123",
@@ -156,7 +169,8 @@ describe("getAccessToken", () => {
       { oauth_verifier: "verifier_code" },
       testConfig,
       "request_token",
-      "request_secret"
+      "request_secret",
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -175,7 +189,8 @@ describe("getAccessToken", () => {
       expect.any(Object),
       testConfig,
       expect.any(String),
-      expect.any(String)
+      expect.any(String),
+      expect.anything()
     );
   });
 
@@ -193,7 +208,8 @@ describe("getAccessToken", () => {
       expect.any(Object),
       testConfig,
       expect.any(String),
-      expect.any(String)
+      expect.any(String),
+      expect.anything()
     );
   });
 
@@ -211,7 +227,8 @@ describe("getAccessToken", () => {
       expect.any(Object),
       testConfig,
       "req_token",
-      "req_secret"
+      "req_secret",
+      expect.anything()
     );
   });
 
@@ -229,7 +246,8 @@ describe("getAccessToken", () => {
       { oauth_verifier: "my_verifier" },
       testConfig,
       expect.any(String),
-      expect.any(String)
+      expect.any(String),
+      expect.anything()
     );
   });
 
@@ -246,7 +264,7 @@ describe("getAccessToken", () => {
   });
 
   it("should handle response with user_id", async () => {
-    const mockResponse: AccessTokenResponse = {
+    const mockResponse: AccessTokenResponseParsed = {
       oauth_token: "token",
       oauth_token_secret: "secret",
       user_id: "12345",
@@ -260,7 +278,7 @@ describe("getAccessToken", () => {
   });
 
   it("should handle response without user_id", async () => {
-    const mockResponse: AccessTokenResponse = {
+    const mockResponse: AccessTokenResponseParsed = {
       oauth_token: "token",
       oauth_token_secret: "secret",
     };

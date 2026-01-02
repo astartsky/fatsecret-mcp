@@ -1,11 +1,12 @@
 import { makeApiRequest } from "../oauth/request.js";
 import { dateToFatSecretFormat } from "../utils/date.js";
-import type {
-  FatSecretConfig,
-  FoodEntriesResponse,
-  FoodEntryCreateResponse,
-  CreateFoodEntryParams,
-} from "../types.js";
+import {
+  FoodEntriesResponseSchema,
+  FoodEntryCreateResponseSchema,
+  type FoodEntriesResponseParsed,
+  type FoodEntryCreateResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig, CreateFoodEntryParams } from "../types.js";
 
 /**
  * Get user's food diary entries for a specific date
@@ -13,7 +14,7 @@ import type {
 export async function getFoodEntries(
   config: FatSecretConfig,
   date?: string
-): Promise<FoodEntriesResponse> {
+): Promise<FoodEntriesResponseParsed> {
   if (!config.accessToken || !config.accessTokenSecret) {
     throw new Error("User authentication required");
   }
@@ -25,8 +26,9 @@ export async function getFoodEntries(
       date: dateToFatSecretFormat(date),
     },
     config,
-    true
-  ) as Promise<FoodEntriesResponse>;
+    true,
+    FoodEntriesResponseSchema
+  );
 }
 
 /**
@@ -35,7 +37,7 @@ export async function getFoodEntries(
 export async function createFoodEntry(
   config: FatSecretConfig,
   params: CreateFoodEntryParams
-): Promise<FoodEntryCreateResponse> {
+): Promise<FoodEntryCreateResponseParsed> {
   if (!config.accessToken || !config.accessTokenSecret) {
     throw new Error("User authentication required");
   }
@@ -56,6 +58,7 @@ export async function createFoodEntry(
       date: dateToFatSecretFormat(params.date),
     },
     config,
-    true
-  ) as Promise<FoodEntryCreateResponse>;
+    true,
+    FoodEntryCreateResponseSchema
+  );
 }

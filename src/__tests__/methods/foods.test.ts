@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { searchFoods, getFood } from "../../methods/foods.js";
-import type { FatSecretConfig, FoodSearchResponse, FoodDetailResponse } from "../../types.js";
+import type { FatSecretConfig } from "../../types.js";
+import type { FoodSearchResponseParsed, FoodDetailResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -21,7 +22,7 @@ describe("searchFoods", () => {
   });
 
   it("should search for foods with default pagination", async () => {
-    const mockResponse: FoodSearchResponse = {
+    const mockResponse: FoodSearchResponseParsed = {
       foods: {
         food: [
           {
@@ -50,13 +51,14 @@ describe("searchFoods", () => {
         max_results: "20",
       },
       testConfig,
-      false
+      false,
+      expect.anything() // schema
     );
     expect(result).toEqual(mockResponse);
   });
 
   it("should search with custom pagination", async () => {
-    const mockResponse: FoodSearchResponse = {
+    const mockResponse: FoodSearchResponseParsed = {
       foods: {
         food: [],
         max_results: "50",
@@ -78,7 +80,8 @@ describe("searchFoods", () => {
         max_results: "50",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -91,7 +94,8 @@ describe("searchFoods", () => {
       expect.any(String),
       expect.any(Object),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -106,7 +110,8 @@ describe("searchFoods", () => {
         search_expression: "chicken breast",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -121,7 +126,8 @@ describe("searchFoods", () => {
         page_number: "5",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -136,7 +142,8 @@ describe("searchFoods", () => {
         max_results: "100",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 });
@@ -155,20 +162,22 @@ describe("getFood", () => {
   });
 
   it("should get food details by ID", async () => {
-    const mockResponse: FoodDetailResponse = {
+    const mockResponse: FoodDetailResponseParsed = {
       food: {
         food_id: "12345",
         food_name: "Apple",
         food_type: "Generic",
         servings: {
-          serving: {
-            serving_id: "1",
-            serving_description: "1 medium",
-            calories: "95",
-            fat: "0.3",
-            carbohydrate: "25",
-            protein: "0.5",
-          },
+          serving: [
+            {
+              serving_id: "1",
+              serving_description: "1 medium",
+              calories: "95",
+              fat: "0.3",
+              carbohydrate: "25",
+              protein: "0.5",
+            },
+          ],
         },
       },
     };
@@ -184,7 +193,8 @@ describe("getFood", () => {
         food_id: "12345",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -194,7 +204,7 @@ describe("getFood", () => {
   });
 
   it("should use useAccessToken=false for public food details", async () => {
-    mockMakeApiRequest.mockResolvedValue({ food: {} });
+    mockMakeApiRequest.mockResolvedValue({ food: { servings: { serving: [] } } });
 
     await getFood(testConfig, "123");
 
@@ -202,12 +212,13 @@ describe("getFood", () => {
       expect.any(String),
       expect.any(Object),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
   it("should handle food with multiple servings", async () => {
-    const mockResponse: FoodDetailResponse = {
+    const mockResponse: FoodDetailResponseParsed = {
       food: {
         food_id: "123",
         food_name: "Rice",

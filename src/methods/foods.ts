@@ -1,5 +1,11 @@
 import { makeApiRequest } from "../oauth/request.js";
-import type { FatSecretConfig, FoodSearchResponse, FoodDetailResponse } from "../types.js";
+import {
+  FoodSearchResponseSchema,
+  FoodDetailResponseSchema,
+  type FoodSearchResponseParsed,
+  type FoodDetailResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig } from "../types.js";
 
 /**
  * Search for foods in the FatSecret database
@@ -9,7 +15,7 @@ export async function searchFoods(
   searchExpression: string,
   pageNumber: number = 0,
   maxResults: number = 20
-): Promise<FoodSearchResponse> {
+): Promise<FoodSearchResponseParsed> {
   return makeApiRequest(
     "GET",
     {
@@ -19,8 +25,9 @@ export async function searchFoods(
       max_results: maxResults.toString(),
     },
     config,
-    false
-  ) as Promise<FoodSearchResponse>;
+    false,
+    FoodSearchResponseSchema
+  );
 }
 
 /**
@@ -29,7 +36,7 @@ export async function searchFoods(
 export async function getFood(
   config: FatSecretConfig,
   foodId: string
-): Promise<FoodDetailResponse> {
+): Promise<FoodDetailResponseParsed> {
   if (!foodId) {
     throw new Error("Food ID is required");
   }
@@ -41,6 +48,7 @@ export async function getFood(
       food_id: foodId,
     },
     config,
-    false
-  ) as Promise<FoodDetailResponse>;
+    false,
+    FoodDetailResponseSchema
+  );
 }

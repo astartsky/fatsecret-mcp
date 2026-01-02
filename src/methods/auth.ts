@@ -1,9 +1,11 @@
 import { makeOAuthRequest } from "../oauth/request.js";
-import type {
-  FatSecretConfig,
-  OAuthTokenResponse,
-  AccessTokenResponse,
-} from "../types.js";
+import {
+  OAuthTokenResponseSchema,
+  AccessTokenResponseSchema,
+  type OAuthTokenResponseParsed,
+  type AccessTokenResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig } from "../types.js";
 
 const REQUEST_TOKEN_URL = "https://authentication.fatsecret.com/oauth/request_token";
 const ACCESS_TOKEN_URL = "https://authentication.fatsecret.com/oauth/access_token";
@@ -15,13 +17,16 @@ export const AUTHORIZE_URL = "https://authentication.fatsecret.com/oauth/authori
 export async function getRequestToken(
   config: FatSecretConfig,
   callbackUrl: string = "oob"
-): Promise<OAuthTokenResponse> {
+): Promise<OAuthTokenResponseParsed> {
   return makeOAuthRequest(
     "POST",
     REQUEST_TOKEN_URL,
     { oauth_callback: callbackUrl },
-    config
-  ) as Promise<OAuthTokenResponse>;
+    config,
+    undefined,
+    undefined,
+    OAuthTokenResponseSchema
+  );
 }
 
 /**
@@ -32,13 +37,14 @@ export async function getAccessToken(
   requestToken: string,
   requestTokenSecret: string,
   verifier: string
-): Promise<AccessTokenResponse> {
+): Promise<AccessTokenResponseParsed> {
   return makeOAuthRequest(
     "GET",
     ACCESS_TOKEN_URL,
     { oauth_verifier: verifier },
     config,
     requestToken,
-    requestTokenSecret
-  ) as Promise<AccessTokenResponse>;
+    requestTokenSecret,
+    AccessTokenResponseSchema
+  );
 }

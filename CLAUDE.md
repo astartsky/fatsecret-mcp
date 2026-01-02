@@ -26,3 +26,13 @@ src/__tests__/
 - `node-fetch` — for HTTP request tests
 - `makeApiRequest`/`makeOAuthRequest` — for method tests
 - All methods from `methods/index.js` — for client tests
+
+## Schema Validation
+
+**Always use the `zod-expert` agent** for creating, updating, or debugging Zod validation schemas.
+
+The agent is especially useful for:
+- Creating new validation schemas
+- Migrating from Zod v3 to v4
+- Debugging validation errors
+- Optimizing schema performance

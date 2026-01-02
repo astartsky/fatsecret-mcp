@@ -1,10 +1,11 @@
 import { makeApiRequest } from "../oauth/request.js";
-import type {
-  FatSecretConfig,
-  RecipeSearchResponse,
-  RecipeDetailResponse,
-  SearchRecipesOptions,
-} from "../types.js";
+import {
+  RecipeSearchResponseSchema,
+  RecipeDetailResponseSchema,
+  type RecipeSearchResponseParsed,
+  type RecipeDetailResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig, SearchRecipesOptions } from "../types.js";
 
 /**
  * Search for recipes in the FatSecret database
@@ -13,7 +14,7 @@ export async function searchRecipes(
   config: FatSecretConfig,
   searchExpression: string,
   options: SearchRecipesOptions = {}
-): Promise<RecipeSearchResponse> {
+): Promise<RecipeSearchResponseParsed> {
   const params: Record<string, string> = {
     method: "recipes.search",
     search_expression: searchExpression,
@@ -25,7 +26,7 @@ export async function searchRecipes(
     params.recipe_type = options.recipeType;
   }
 
-  return makeApiRequest("GET", params, config, false) as Promise<RecipeSearchResponse>;
+  return makeApiRequest("GET", params, config, false, RecipeSearchResponseSchema);
 }
 
 /**
@@ -34,7 +35,7 @@ export async function searchRecipes(
 export async function getRecipe(
   config: FatSecretConfig,
   recipeId: string
-): Promise<RecipeDetailResponse> {
+): Promise<RecipeDetailResponseParsed> {
   if (!recipeId) {
     throw new Error("Recipe ID is required");
   }
@@ -46,6 +47,7 @@ export async function getRecipe(
       recipe_id: recipeId,
     },
     config,
-    false
-  ) as Promise<RecipeDetailResponse>;
+    false,
+    RecipeDetailResponseSchema
+  );
 }

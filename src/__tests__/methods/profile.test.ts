@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getProfile } from "../../methods/profile.js";
-import type { FatSecretConfig, ProfileResponse } from "../../types.js";
+import type { FatSecretConfig } from "../../types.js";
+import type { ProfileResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -29,7 +30,7 @@ describe("getProfile", () => {
   });
 
   it("should get user profile with valid access token", async () => {
-    const mockResponse: ProfileResponse = {
+    const mockResponse: ProfileResponseParsed = {
       profile: {
         user_id: "user123",
         first_name: "John",
@@ -47,7 +48,8 @@ describe("getProfile", () => {
       "GET",
       { method: "profile.get" },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -85,7 +87,8 @@ describe("getProfile", () => {
       "GET",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -98,7 +101,8 @@ describe("getProfile", () => {
       "GET",
       { method: "profile.get" },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -113,7 +117,7 @@ describe("getProfile", () => {
   });
 
   it("should handle profile with minimal data", async () => {
-    const mockResponse: ProfileResponse = {
+    const mockResponse: ProfileResponseParsed = {
       profile: {
         user_id: "user456",
       },

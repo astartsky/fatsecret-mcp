@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getWeightMonth } from "../../methods/weight.js";
-import type { FatSecretConfig, WeightMonthResponse } from "../../types.js";
+import type { FatSecretConfig } from "../../types.js";
+import type { WeightMonthResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -38,7 +39,7 @@ describe("getWeightMonth", () => {
   });
 
   it("should get weight entries for a specific month", async () => {
-    const mockResponse: WeightMonthResponse = {
+    const mockResponse: WeightMonthResponseParsed = {
       month: {
         day: [
           {
@@ -66,13 +67,14 @@ describe("getWeightMonth", () => {
         date: "19737",
       },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
 
   it("should get weight entries for current month when no date provided", async () => {
-    mockMakeApiRequest.mockResolvedValue({ month: {} });
+    mockMakeApiRequest.mockResolvedValue({ month: { day: [] } });
 
     await getWeightMonth(authenticatedConfig);
 
@@ -83,7 +85,8 @@ describe("getWeightMonth", () => {
         date: "19737",
       },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -106,7 +109,7 @@ describe("getWeightMonth", () => {
   });
 
   it("should use useAccessToken=true for authenticated request", async () => {
-    mockMakeApiRequest.mockResolvedValue({ month: {} });
+    mockMakeApiRequest.mockResolvedValue({ month: { day: [] } });
 
     await getWeightMonth(authenticatedConfig);
 
@@ -114,12 +117,13 @@ describe("getWeightMonth", () => {
       "GET",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
   it("should use GET method", async () => {
-    mockMakeApiRequest.mockResolvedValue({ month: {} });
+    mockMakeApiRequest.mockResolvedValue({ month: { day: [] } });
 
     await getWeightMonth(authenticatedConfig);
 
@@ -127,29 +131,35 @@ describe("getWeightMonth", () => {
       "GET",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
   it("should handle empty weight data", async () => {
-    const mockResponse: WeightMonthResponse = {
-      month: {},
+    const mockResponse: WeightMonthResponseParsed = {
+      month: {
+        day: [],
+      },
     };
 
     mockMakeApiRequest.mockResolvedValue(mockResponse);
 
     const result = await getWeightMonth(authenticatedConfig);
 
-    expect(result.month.day).toBeUndefined();
+    expect(result.month.day).toEqual([]);
   });
 
-  it("should handle single day weight entry (not array)", async () => {
-    const mockResponse: WeightMonthResponse = {
+  it("should handle single day weight entry normalized to array", async () => {
+    // Note: With schema validation, single entries are normalized to arrays
+    const mockResponse: WeightMonthResponseParsed = {
       month: {
-        day: {
-          date_int: "19737",
-          weight_kg: "80.0",
-        },
+        day: [
+          {
+            date_int: "19737",
+            weight_kg: "80.0",
+          },
+        ],
       },
     };
 
@@ -158,6 +168,7 @@ describe("getWeightMonth", () => {
     const result = await getWeightMonth(authenticatedConfig);
 
     expect(result.month.day).toBeDefined();
+    expect(Array.isArray(result.month.day)).toBe(true);
   });
 
   it("should not make API call when auth is missing", async () => {
@@ -171,7 +182,7 @@ describe("getWeightMonth", () => {
   });
 
   it("should call weights.get_month method", async () => {
-    mockMakeApiRequest.mockResolvedValue({ month: {} });
+    mockMakeApiRequest.mockResolvedValue({ month: { day: [] } });
 
     await getWeightMonth(authenticatedConfig);
 
@@ -181,12 +192,13 @@ describe("getWeightMonth", () => {
         method: "weights.get_month",
       }),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
   it("should handle weight entries with only kg", async () => {
-    const mockResponse: WeightMonthResponse = {
+    const mockResponse: WeightMonthResponseParsed = {
       month: {
         day: [
           {
@@ -205,7 +217,7 @@ describe("getWeightMonth", () => {
   });
 
   it("should handle weight entries with only lbs", async () => {
-    const mockResponse: WeightMonthResponse = {
+    const mockResponse: WeightMonthResponseParsed = {
       month: {
         day: [
           {

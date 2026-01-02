@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { searchRecipes, getRecipe } from "../../methods/recipes.js";
-import type { FatSecretConfig, RecipeSearchResponse, RecipeDetailResponse } from "../../types.js";
+import type { FatSecretConfig } from "../../types.js";
+import type { RecipeSearchResponseParsed, RecipeDetailResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -21,7 +22,7 @@ describe("searchRecipes", () => {
   });
 
   it("should search for recipes with default options", async () => {
-    const mockResponse: RecipeSearchResponse = {
+    const mockResponse: RecipeSearchResponseParsed = {
       recipes: {
         recipe: [
           {
@@ -49,7 +50,8 @@ describe("searchRecipes", () => {
         max_results: "20",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -65,7 +67,8 @@ describe("searchRecipes", () => {
         page_number: "3",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -80,7 +83,8 @@ describe("searchRecipes", () => {
         max_results: "50",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -95,7 +99,8 @@ describe("searchRecipes", () => {
         recipe_type: "Main Dish",
       }),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -118,7 +123,8 @@ describe("searchRecipes", () => {
         recipe_type: "Side Dish",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -140,7 +146,8 @@ describe("searchRecipes", () => {
       "GET",
       expect.any(Object),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
@@ -158,7 +165,8 @@ describe("searchRecipes", () => {
         max_results: "20",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 });
@@ -177,7 +185,7 @@ describe("getRecipe", () => {
   });
 
   it("should get recipe details by ID", async () => {
-    const mockResponse: RecipeDetailResponse = {
+    const mockResponse: RecipeDetailResponseParsed = {
       recipe: {
         recipe_id: "12345",
         recipe_name: "Grilled Chicken",
@@ -205,7 +213,8 @@ describe("getRecipe", () => {
         recipe_id: "12345",
       },
       testConfig,
-      false
+      false,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -223,12 +232,13 @@ describe("getRecipe", () => {
       expect.any(String),
       expect.any(Object),
       testConfig,
-      false
+      false,
+      expect.anything()
     );
   });
 
   it("should handle recipe without ingredients", async () => {
-    const mockResponse: RecipeDetailResponse = {
+    const mockResponse: RecipeDetailResponseParsed = {
       recipe: {
         recipe_id: "123",
         recipe_name: "Simple Recipe",
@@ -254,7 +264,7 @@ describe("getRecipe", () => {
   });
 
   it("should handle recipe with multiple ingredients", async () => {
-    const mockResponse: RecipeDetailResponse = {
+    const mockResponse: RecipeDetailResponseParsed = {
       recipe: {
         recipe_id: "456",
         recipe_name: "Complex Recipe",

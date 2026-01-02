@@ -1,6 +1,10 @@
 import { makeApiRequest } from "../oauth/request.js";
 import { dateToFatSecretFormat } from "../utils/date.js";
-import type { FatSecretConfig, WeightMonthResponse } from "../types.js";
+import {
+  WeightMonthResponseSchema,
+  type WeightMonthResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig } from "../types.js";
 
 /**
  * Get user's weight entries for a specific month
@@ -8,7 +12,7 @@ import type { FatSecretConfig, WeightMonthResponse } from "../types.js";
 export async function getWeightMonth(
   config: FatSecretConfig,
   date?: string
-): Promise<WeightMonthResponse> {
+): Promise<WeightMonthResponseParsed> {
   if (!config.accessToken || !config.accessTokenSecret) {
     throw new Error("User authentication required");
   }
@@ -20,6 +24,7 @@ export async function getWeightMonth(
       date: dateToFatSecretFormat(date),
     },
     config,
-    true
-  ) as Promise<WeightMonthResponse>;
+    true,
+    WeightMonthResponseSchema
+  );
 }

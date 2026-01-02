@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { z } from "zod";
 import { makeOAuthRequest, makeApiRequest } from "../../oauth/request.js";
 import type { FatSecretConfig } from "../../types.js";
 
@@ -18,6 +19,15 @@ vi.mock("../../oauth/signature.js", () => ({
   })),
   generateSignature: vi.fn(() => "test_signature"),
 }));
+
+// Test schema that accepts any object
+const testSchema = z.object({}).passthrough();
+
+// OAuth token schema for specific tests
+const oauthTokenSchema = z.object({
+  oauth_token: z.string(),
+  oauth_token_secret: z.string(),
+});
 
 describe("makeOAuthRequest", () => {
   let mockFetch: ReturnType<typeof vi.fn>;
@@ -46,7 +56,10 @@ describe("makeOAuthRequest", () => {
       "GET",
       "https://api.example.com/resource",
       { param1: "value1" },
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -67,7 +80,10 @@ describe("makeOAuthRequest", () => {
       "POST",
       "https://api.example.com/resource",
       { param1: "value1" },
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -89,7 +105,10 @@ describe("makeOAuthRequest", () => {
       "GET",
       "https://api.example.com/resource",
       {},
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      testSchema
     );
 
     const [url] = mockFetch.mock.calls[0];
@@ -105,7 +124,15 @@ describe("makeOAuthRequest", () => {
     });
 
     await expect(
-      makeOAuthRequest("GET", "https://api.example.com", {}, testConfig)
+      makeOAuthRequest(
+        "GET",
+        "https://api.example.com",
+        {},
+        testConfig,
+        undefined,
+        undefined,
+        testSchema
+      )
     ).rejects.toThrow("OAuth error: 401 - Unauthorized");
   });
 
@@ -119,7 +146,10 @@ describe("makeOAuthRequest", () => {
       "POST",
       "https://api.example.com/request_token",
       {},
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      oauthTokenSchema
     );
 
     expect(result).toEqual({
@@ -140,7 +170,8 @@ describe("makeOAuthRequest", () => {
       {},
       testConfig,
       "access_token",
-      "access_secret"
+      "access_secret",
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -156,7 +187,10 @@ describe("makeOAuthRequest", () => {
       "GET",
       "https://api.example.com/resource",
       {},
-      testConfig
+      testConfig,
+      undefined,
+      undefined,
+      testSchema
     );
 
     expect(result).toEqual({});
@@ -192,7 +226,8 @@ describe("makeApiRequest", () => {
       "GET",
       { method: "foods.search", search_expression: "apple" },
       testConfig,
-      false
+      false,
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -213,7 +248,8 @@ describe("makeApiRequest", () => {
       "POST",
       { method: "food_entry.create", food_id: "123" },
       testConfig,
-      true
+      true,
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -234,7 +270,8 @@ describe("makeApiRequest", () => {
       "GET",
       { method: "profile.get" },
       testConfig,
-      true
+      true,
+      testSchema
     );
 
     const [url] = mockFetch.mock.calls[0];
@@ -249,7 +286,13 @@ describe("makeApiRequest", () => {
     });
 
     await expect(
-      makeApiRequest("GET", { method: "foods.search" }, testConfig, false)
+      makeApiRequest(
+        "GET",
+        { method: "foods.search" },
+        testConfig,
+        false,
+        testSchema
+      )
     ).rejects.toThrow("FatSecret API error: 500 - Internal Server Error");
   });
 
@@ -268,7 +311,8 @@ describe("makeApiRequest", () => {
       "GET",
       { method: "foods.search" },
       configWithoutToken,
-      false
+      false,
+      testSchema
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -283,7 +327,7 @@ describe("makeApiRequest", () => {
     const originalParams = { method: "foods.search" };
     const paramsCopy = { ...originalParams };
 
-    await makeApiRequest("GET", originalParams, testConfig, false);
+    await makeApiRequest("GET", originalParams, testConfig, false, testSchema);
 
     expect(originalParams).toEqual(paramsCopy);
   });
@@ -302,7 +346,8 @@ describe("makeApiRequest", () => {
       "GET",
       { method: "foods.search" },
       testConfig,
-      false
+      false,
+      testSchema
     );
 
     expect(result).toEqual(mockResponse);
@@ -318,7 +363,8 @@ describe("makeApiRequest", () => {
       "GET",
       { method: "some.method" },
       testConfig,
-      false
+      false,
+      testSchema
     );
 
     expect(result).toEqual({ key1: "value1", key2: "value2" });

@@ -1,12 +1,16 @@
 import { makeApiRequest } from "../oauth/request.js";
-import type { FatSecretConfig, ProfileResponse } from "../types.js";
+import {
+  ProfileResponseSchema,
+  type ProfileResponseParsed,
+} from "../schemas/index.js";
+import type { FatSecretConfig } from "../types.js";
 
 /**
  * Get the authenticated user's profile
  */
 export async function getProfile(
   config: FatSecretConfig
-): Promise<ProfileResponse> {
+): Promise<ProfileResponseParsed> {
   if (!config.accessToken || !config.accessTokenSecret) {
     throw new Error("User authentication required");
   }
@@ -15,6 +19,7 @@ export async function getProfile(
     "GET",
     { method: "profile.get" },
     config,
-    true
-  ) as Promise<ProfileResponse>;
+    true,
+    ProfileResponseSchema
+  );
 }

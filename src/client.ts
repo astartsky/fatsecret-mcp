@@ -1,18 +1,20 @@
 import type {
   FatSecretConfig,
-  FoodSearchResponse,
-  FoodDetailResponse,
-  RecipeSearchResponse,
-  RecipeDetailResponse,
-  ProfileResponse,
-  FoodEntriesResponse,
-  FoodEntryCreateResponse,
-  WeightMonthResponse,
-  OAuthTokenResponse,
-  AccessTokenResponse,
   CreateFoodEntryParams,
   SearchRecipesOptions,
 } from "./types.js";
+import type {
+  FoodSearchResponseParsed,
+  FoodDetailResponseParsed,
+  RecipeSearchResponseParsed,
+  RecipeDetailResponseParsed,
+  ProfileResponseParsed,
+  FoodEntriesResponseParsed,
+  FoodEntryCreateResponseParsed,
+  WeightMonthResponseParsed,
+  OAuthTokenResponseParsed,
+  AccessTokenResponseParsed,
+} from "./schemas/index.js";
 
 import * as methods from "./methods/index.js";
 import { AUTHORIZE_URL } from "./methods/auth.js";
@@ -46,11 +48,11 @@ export class FatSecretClient {
     searchExpression: string,
     pageNumber?: number,
     maxResults?: number
-  ): Promise<FoodSearchResponse> {
+  ): Promise<FoodSearchResponseParsed> {
     return methods.searchFoods(this.config, searchExpression, pageNumber, maxResults);
   }
 
-  getFood(foodId: string): Promise<FoodDetailResponse> {
+  getFood(foodId: string): Promise<FoodDetailResponseParsed> {
     return methods.getFood(this.config, foodId);
   }
 
@@ -58,35 +60,35 @@ export class FatSecretClient {
   searchRecipes(
     searchExpression: string,
     options?: SearchRecipesOptions
-  ): Promise<RecipeSearchResponse> {
+  ): Promise<RecipeSearchResponseParsed> {
     return methods.searchRecipes(this.config, searchExpression, options);
   }
 
-  getRecipe(recipeId: string): Promise<RecipeDetailResponse> {
+  getRecipe(recipeId: string): Promise<RecipeDetailResponseParsed> {
     return methods.getRecipe(this.config, recipeId);
   }
 
   // Profile
-  getProfile(): Promise<ProfileResponse> {
+  getProfile(): Promise<ProfileResponseParsed> {
     return methods.getProfile(this.config);
   }
 
   // Food Diary
-  getFoodEntries(date?: string): Promise<FoodEntriesResponse> {
+  getFoodEntries(date?: string): Promise<FoodEntriesResponseParsed> {
     return methods.getFoodEntries(this.config, date);
   }
 
-  createFoodEntry(params: CreateFoodEntryParams): Promise<FoodEntryCreateResponse> {
+  createFoodEntry(params: CreateFoodEntryParams): Promise<FoodEntryCreateResponseParsed> {
     return methods.createFoodEntry(this.config, params);
   }
 
   // Weight
-  getWeightMonth(date?: string): Promise<WeightMonthResponse> {
+  getWeightMonth(date?: string): Promise<WeightMonthResponseParsed> {
     return methods.getWeightMonth(this.config, date);
   }
 
   // OAuth
-  getRequestToken(callbackUrl?: string): Promise<OAuthTokenResponse> {
+  getRequestToken(callbackUrl?: string): Promise<OAuthTokenResponseParsed> {
     return methods.getRequestToken(this.config, callbackUrl);
   }
 
@@ -94,7 +96,7 @@ export class FatSecretClient {
     requestToken: string,
     requestTokenSecret: string,
     verifier: string
-  ): Promise<AccessTokenResponse> {
+  ): Promise<AccessTokenResponseParsed> {
     return methods.getAccessToken(this.config, requestToken, requestTokenSecret, verifier);
   }
 }

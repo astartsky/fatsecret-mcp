@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getFoodEntries, createFoodEntry } from "../../methods/diary.js";
-import type {
-  FatSecretConfig,
-  FoodEntriesResponse,
-  FoodEntryCreateResponse,
-  CreateFoodEntryParams,
-} from "../../types.js";
+import type { FatSecretConfig, CreateFoodEntryParams } from "../../types.js";
+import type { FoodEntriesResponseParsed, FoodEntryCreateResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -43,7 +39,7 @@ describe("getFoodEntries", () => {
   });
 
   it("should get food entries for a specific date", async () => {
-    const mockResponse: FoodEntriesResponse = {
+    const mockResponse: FoodEntriesResponseParsed = {
       food_entries: {
         food_entry: [
           {
@@ -71,13 +67,14 @@ describe("getFoodEntries", () => {
         date: "19737",
       },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
 
   it("should get food entries for today when no date provided", async () => {
-    mockMakeApiRequest.mockResolvedValue({ food_entries: {} });
+    mockMakeApiRequest.mockResolvedValue({ food_entries: { food_entry: [] } });
 
     await getFoodEntries(authenticatedConfig);
 
@@ -88,7 +85,8 @@ describe("getFoodEntries", () => {
         date: "19737",
       },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -99,7 +97,7 @@ describe("getFoodEntries", () => {
   });
 
   it("should use useAccessToken=true for authenticated request", async () => {
-    mockMakeApiRequest.mockResolvedValue({ food_entries: {} });
+    mockMakeApiRequest.mockResolvedValue({ food_entries: { food_entry: [] } });
 
     await getFoodEntries(authenticatedConfig);
 
@@ -107,34 +105,40 @@ describe("getFoodEntries", () => {
       "GET",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
   it("should handle empty food entries", async () => {
-    const mockResponse: FoodEntriesResponse = {
-      food_entries: {},
+    const mockResponse: FoodEntriesResponseParsed = {
+      food_entries: {
+        food_entry: [],
+      },
     };
 
     mockMakeApiRequest.mockResolvedValue(mockResponse);
 
     const result = await getFoodEntries(authenticatedConfig);
 
-    expect(result.food_entries.food_entry).toBeUndefined();
+    expect(result.food_entries.food_entry).toEqual([]);
   });
 
-  it("should handle single food entry (not array)", async () => {
-    const mockResponse: FoodEntriesResponse = {
+  it("should handle single food entry normalized to array", async () => {
+    // Note: With schema validation, single entries are normalized to arrays
+    const mockResponse: FoodEntriesResponseParsed = {
       food_entries: {
-        food_entry: {
-          food_entry_id: "123",
-          food_id: "456",
-          food_entry_name: "Banana",
-          serving_id: "1",
-          number_of_units: "1",
-          meal: "snack",
-          date_int: "19737",
-        },
+        food_entry: [
+          {
+            food_entry_id: "123",
+            food_id: "456",
+            food_entry_name: "Banana",
+            serving_id: "1",
+            number_of_units: "1",
+            meal: "snack",
+            date_int: "19737",
+          },
+        ],
       },
     };
 
@@ -143,6 +147,7 @@ describe("getFoodEntries", () => {
     const result = await getFoodEntries(authenticatedConfig);
 
     expect(result.food_entries.food_entry).toBeDefined();
+    expect(Array.isArray(result.food_entries.food_entry)).toBe(true);
   });
 
   it("should not make API call when auth is missing", async () => {
@@ -187,7 +192,7 @@ describe("createFoodEntry", () => {
   });
 
   it("should create food entry with valid params", async () => {
-    const mockResponse: FoodEntryCreateResponse = {
+    const mockResponse: FoodEntryCreateResponseParsed = {
       food_entry_id: {
         value: "98765",
       },
@@ -209,7 +214,8 @@ describe("createFoodEntry", () => {
         date: "19737",
       },
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
     expect(result).toEqual(mockResponse);
   });
@@ -236,7 +242,8 @@ describe("createFoodEntry", () => {
         meal: "snack",
       }),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -277,7 +284,8 @@ describe("createFoodEntry", () => {
       "POST",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -297,7 +305,8 @@ describe("createFoodEntry", () => {
         number_of_units: "1.5",
       }),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -310,7 +319,8 @@ describe("createFoodEntry", () => {
       "POST",
       expect.any(Object),
       authenticatedConfig,
-      true
+      true,
+      expect.anything()
     );
   });
 
@@ -347,7 +357,8 @@ describe("createFoodEntry", () => {
         "POST",
         expect.objectContaining({ meal: mealType }),
         authenticatedConfig,
-        true
+        true,
+        expect.anything()
       );
     }
   });
