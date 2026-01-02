@@ -21,7 +21,7 @@ describe("searchFoods", () => {
     mockMakeApiRequest = requestModule.makeApiRequest as ReturnType<typeof vi.fn>;
   });
 
-  it("should search for foods with default pagination", async () => {
+  it("should search for foods with default options", async () => {
     const mockResponse: FoodSearchResponseParsed = {
       foods: {
         food: [
@@ -57,7 +57,7 @@ describe("searchFoods", () => {
     expect(result).toEqual(mockResponse);
   });
 
-  it("should search with custom pagination", async () => {
+  it("should search with custom pagination options", async () => {
     const mockResponse: FoodSearchResponseParsed = {
       foods: {
         food: [],
@@ -69,7 +69,7 @@ describe("searchFoods", () => {
 
     mockMakeApiRequest.mockResolvedValue(mockResponse);
 
-    await searchFoods(testConfig, "banana", 2, 50);
+    await searchFoods(testConfig, "banana", { pageNumber: 2, maxResults: 50 });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
       "GET",
@@ -86,7 +86,7 @@ describe("searchFoods", () => {
   });
 
   it("should use useAccessToken=false for public search", async () => {
-    mockMakeApiRequest.mockResolvedValue({ foods: { food: [] } });
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "20", page_number: "0", total_results: "0" } });
 
     await searchFoods(testConfig, "test");
 
@@ -100,7 +100,7 @@ describe("searchFoods", () => {
   });
 
   it("should pass search expression correctly", async () => {
-    mockMakeApiRequest.mockResolvedValue({ foods: { food: [] } });
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "20", page_number: "0", total_results: "0" } });
 
     await searchFoods(testConfig, "chicken breast");
 
@@ -115,10 +115,10 @@ describe("searchFoods", () => {
     );
   });
 
-  it("should convert page number to string", async () => {
-    mockMakeApiRequest.mockResolvedValue({ foods: { food: [] } });
+  it("should convert page number from options to string", async () => {
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "20", page_number: "5", total_results: "0" } });
 
-    await searchFoods(testConfig, "test", 5);
+    await searchFoods(testConfig, "test", { pageNumber: 5 });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
       "GET",
@@ -131,15 +131,56 @@ describe("searchFoods", () => {
     );
   });
 
-  it("should convert max results to string", async () => {
-    mockMakeApiRequest.mockResolvedValue({ foods: { food: [] } });
+  it("should convert max results from options to string", async () => {
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "100", page_number: "0", total_results: "0" } });
 
-    await searchFoods(testConfig, "test", 0, 100);
+    await searchFoods(testConfig, "test", { maxResults: 100 });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
       "GET",
       expect.objectContaining({
         max_results: "100",
+      }),
+      testConfig,
+      false,
+      expect.anything()
+    );
+  });
+
+  it("should include optional flags when provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "20", page_number: "0", total_results: "0" } });
+
+    await searchFoods(testConfig, "test", {
+      includeSubCategories: true,
+      includeFoodImages: true,
+      includeFoodAttributes: true,
+      flagDefaultServing: true,
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "GET",
+      expect.objectContaining({
+        include_sub_categories: "true",
+        include_food_images: "true",
+        include_food_attributes: "true",
+        flag_default_serving: "true",
+      }),
+      testConfig,
+      false,
+      expect.anything()
+    );
+  });
+
+  it("should include region and language when provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "20", page_number: "0", total_results: "0" } });
+
+    await searchFoods(testConfig, "test", { region: "US", language: "en" });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "GET",
+      expect.objectContaining({
+        region: "US",
+        language: "en",
       }),
       testConfig,
       false,
@@ -204,7 +245,7 @@ describe("getFood", () => {
   });
 
   it("should use useAccessToken=false for public food details", async () => {
-    mockMakeApiRequest.mockResolvedValue({ food: { servings: { serving: [] } } });
+    mockMakeApiRequest.mockResolvedValue({ food: { food_id: "123", food_name: "Test", food_type: "Generic", servings: { serving: [] } } });
 
     await getFood(testConfig, "123");
 
@@ -261,5 +302,50 @@ describe("getFood", () => {
     }
 
     expect(mockMakeApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("should include optional flags when provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({ food: { food_id: "123", food_name: "Test", food_type: "Generic", servings: { serving: [] } } });
+
+    await getFood(testConfig, "123", {
+      includeSubCategories: true,
+      includeFoodImages: true,
+      includeFoodAttributes: true,
+      flagDefaultServing: true,
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "GET",
+      expect.objectContaining({
+        method: "food.get",
+        food_id: "123",
+        include_sub_categories: "true",
+        include_food_images: "true",
+        include_food_attributes: "true",
+        flag_default_serving: "true",
+      }),
+      testConfig,
+      false,
+      expect.anything()
+    );
+  });
+
+  it("should include region and language when provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({ food: { food_id: "123", food_name: "Test", food_type: "Generic", servings: { serving: [] } } });
+
+    await getFood(testConfig, "123", { region: "US", language: "en" });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "GET",
+      expect.objectContaining({
+        method: "food.get",
+        food_id: "123",
+        region: "US",
+        language: "en",
+      }),
+      testConfig,
+      false,
+      expect.anything()
+    );
   });
 });

@@ -30,10 +30,49 @@ export interface CreateFoodEntryParams {
   date?: string;
 }
 
-export interface SearchRecipesOptions {
-  recipeType?: string;
+export interface SearchFoodsOptions {
   pageNumber?: number;
   maxResults?: number;
+  includeSubCategories?: boolean;
+  includeFoodImages?: boolean;
+  includeFoodAttributes?: boolean;
+  flagDefaultServing?: boolean;
+  region?: string;
+  language?: string;
+}
+
+export interface GetFoodOptions {
+  includeSubCategories?: boolean;
+  includeFoodImages?: boolean;
+  includeFoodAttributes?: boolean;
+  flagDefaultServing?: boolean;
+  region?: string;
+  language?: string;
+}
+
+export interface SearchRecipesOptions {
+  pageNumber?: number;
+  maxResults?: number;
+  recipeTypes?: string;
+  recipeTypesMatchAll?: boolean;
+  mustHaveImages?: boolean;
+  caloriesFrom?: number;
+  caloriesTo?: number;
+  carbPercentageFrom?: number;
+  carbPercentageTo?: number;
+  proteinPercentageFrom?: number;
+  proteinPercentageTo?: number;
+  fatPercentageFrom?: number;
+  fatPercentageTo?: number;
+  prepTimeFrom?: number;
+  prepTimeTo?: number;
+  sortBy?: 'newest' | 'oldest' | 'caloriesPerServingAscending' | 'caloriesPerServingDescending';
+  region?: string;
+}
+
+export interface GetRecipeOptions {
+  region?: string;
+  language?: string;
 }
 
 // Request context for OAuth

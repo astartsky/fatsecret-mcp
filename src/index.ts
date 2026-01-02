@@ -307,11 +307,10 @@ class FatSecretMCPServer {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
 
-    const response = await this.client.searchFoods(
-      args.searchExpression,
-      args.pageNumber ?? 0,
-      args.maxResults ?? 20
-    );
+    const response = await this.client.searchFoods(args.searchExpression, {
+      pageNumber: args.pageNumber,
+      maxResults: args.maxResults,
+    });
 
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
@@ -321,7 +320,7 @@ class FatSecretMCPServer {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
 
-    const response = await this.client.getFood(args.foodId);
+    const response = await this.client.getFood(args.foodId, {});
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
@@ -331,7 +330,7 @@ class FatSecretMCPServer {
     }
 
     const response = await this.client.searchRecipes(args.searchExpression, {
-      recipeType: args.recipeType,
+      recipeTypes: args.recipeType,
       pageNumber: args.pageNumber,
       maxResults: args.maxResults,
     });
@@ -344,7 +343,7 @@ class FatSecretMCPServer {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
 
-    const response = await this.client.getRecipe(args.recipeId);
+    const response = await this.client.getRecipe(args.recipeId, {});
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 

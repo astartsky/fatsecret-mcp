@@ -1,7 +1,10 @@
 import type {
   FatSecretConfig,
   CreateFoodEntryParams,
+  SearchFoodsOptions,
+  GetFoodOptions,
   SearchRecipesOptions,
+  GetRecipeOptions,
 } from "./types.js";
 import type {
   FoodSearchResponseParsed,
@@ -46,14 +49,13 @@ export class FatSecretClient {
   // Foods
   searchFoods(
     searchExpression: string,
-    pageNumber?: number,
-    maxResults?: number
+    options?: SearchFoodsOptions
   ): Promise<FoodSearchResponseParsed> {
-    return methods.searchFoods(this.config, searchExpression, pageNumber, maxResults);
+    return methods.searchFoods(this.config, searchExpression, options);
   }
 
-  getFood(foodId: string): Promise<FoodDetailResponseParsed> {
-    return methods.getFood(this.config, foodId);
+  getFood(foodId: string, options?: GetFoodOptions): Promise<FoodDetailResponseParsed> {
+    return methods.getFood(this.config, foodId, options);
   }
 
   // Recipes
@@ -64,8 +66,8 @@ export class FatSecretClient {
     return methods.searchRecipes(this.config, searchExpression, options);
   }
 
-  getRecipe(recipeId: string): Promise<RecipeDetailResponseParsed> {
-    return methods.getRecipe(this.config, recipeId);
+  getRecipe(recipeId: string, options?: GetRecipeOptions): Promise<RecipeDetailResponseParsed> {
+    return methods.getRecipe(this.config, recipeId, options);
   }
 
   // Profile

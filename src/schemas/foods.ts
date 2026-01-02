@@ -1,6 +1,35 @@
 import { z } from "zod";
 import { singleOrArray, optionalSingleOrArray } from "./utils.js";
 
+// Ternary type: 1 = true, 0 = false, -1 = unknown
+const TernarySchema = z.number().int().min(-1).max(1);
+
+const FoodImageSchema = z.object({
+  image_url: z.string(),
+  image_type: z.string(),
+});
+
+const AllergenSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: TernarySchema,
+});
+
+const PreferenceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: TernarySchema,
+});
+
+const FoodAttributesSchema = z.object({
+  allergens: z.object({
+    allergen: optionalSingleOrArray(AllergenSchema),
+  }).optional(),
+  preferences: z.object({
+    preference: optionalSingleOrArray(PreferenceSchema),
+  }).optional(),
+});
+
 const FoodItemSchema = z.object({
   food_id: z.string(),
   food_name: z.string(),
@@ -8,6 +37,11 @@ const FoodItemSchema = z.object({
   food_description: z.string(),
   brand_name: z.string().optional(),
   food_url: z.string().optional(),
+  food_sub_categories: optionalSingleOrArray(z.string()).optional(),
+  food_images: z.object({
+    food_image: optionalSingleOrArray(FoodImageSchema),
+  }).optional(),
+  food_attributes: FoodAttributesSchema.optional(),
 });
 
 const ServingSchema = z.object({
@@ -34,6 +68,7 @@ const ServingSchema = z.object({
   vitamin_c: z.string().optional(),
   calcium: z.string().optional(),
   iron: z.string().optional(),
+  is_default: z.string().optional(),
 });
 
 export const FoodSearchResponseSchema = z.object({
@@ -52,6 +87,11 @@ export const FoodDetailResponseSchema = z.object({
     food_type: z.string(),
     food_url: z.string().optional(),
     brand_name: z.string().optional(),
+    food_sub_categories: optionalSingleOrArray(z.string()).optional(),
+    food_images: z.object({
+      food_image: optionalSingleOrArray(FoodImageSchema),
+    }).optional(),
+    food_attributes: FoodAttributesSchema.optional(),
     servings: z.object({
       serving: singleOrArray(ServingSchema),
     }),
@@ -62,3 +102,6 @@ export type FoodSearchResponseParsed = z.infer<typeof FoodSearchResponseSchema>;
 export type FoodDetailResponseParsed = z.infer<typeof FoodDetailResponseSchema>;
 export type FoodItem = z.infer<typeof FoodItemSchema>;
 export type Serving = z.infer<typeof ServingSchema>;
+export type FoodImage = z.infer<typeof FoodImageSchema>;
+export type Allergen = z.infer<typeof AllergenSchema>;
+export type Preference = z.infer<typeof PreferenceSchema>;

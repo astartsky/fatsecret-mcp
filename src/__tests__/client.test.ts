@@ -185,7 +185,7 @@ describe("FatSecretClient", () => {
     it("should delegate to methods.searchFoods", async () => {
       const methods = await import("../methods/index.js");
       const mockSearchFoods = methods.searchFoods as ReturnType<typeof vi.fn>;
-      mockSearchFoods.mockResolvedValue({ foods: { food: [] } });
+      mockSearchFoods.mockResolvedValue({ foods_search: { results: { food: [] } } });
 
       const client = new FatSecretClient(baseConfig);
       await client.searchFoods("apple");
@@ -193,24 +193,23 @@ describe("FatSecretClient", () => {
       expect(mockSearchFoods).toHaveBeenCalledWith(
         expect.objectContaining({ clientId: "test_client_id" }),
         "apple",
-        undefined,
         undefined
       );
     });
 
-    it("should pass pagination parameters", async () => {
+    it("should pass options parameter", async () => {
       const methods = await import("../methods/index.js");
       const mockSearchFoods = methods.searchFoods as ReturnType<typeof vi.fn>;
-      mockSearchFoods.mockResolvedValue({ foods: { food: [] } });
+      mockSearchFoods.mockResolvedValue({ foods_search: { results: { food: [] } } });
 
       const client = new FatSecretClient(baseConfig);
-      await client.searchFoods("banana", 2, 50);
+      const options = { pageNumber: 2, maxResults: 50 };
+      await client.searchFoods("banana", options);
 
       expect(mockSearchFoods).toHaveBeenCalledWith(
         expect.any(Object),
         "banana",
-        2,
-        50
+        options
       );
     });
   });
@@ -226,7 +225,24 @@ describe("FatSecretClient", () => {
 
       expect(mockGetFood).toHaveBeenCalledWith(
         expect.objectContaining({ clientId: "test_client_id" }),
-        "12345"
+        "12345",
+        undefined
+      );
+    });
+
+    it("should pass options parameter", async () => {
+      const methods = await import("../methods/index.js");
+      const mockGetFood = methods.getFood as ReturnType<typeof vi.fn>;
+      mockGetFood.mockResolvedValue({ food: {} });
+
+      const client = new FatSecretClient(baseConfig);
+      const options = { includeFoodImages: true };
+      await client.getFood("12345", options);
+
+      expect(mockGetFood).toHaveBeenCalledWith(
+        expect.any(Object),
+        "12345",
+        options
       );
     });
   });
@@ -275,7 +291,24 @@ describe("FatSecretClient", () => {
 
       expect(mockGetRecipe).toHaveBeenCalledWith(
         expect.objectContaining({ clientId: "test_client_id" }),
-        "67890"
+        "67890",
+        undefined
+      );
+    });
+
+    it("should pass options parameter", async () => {
+      const methods = await import("../methods/index.js");
+      const mockGetRecipe = methods.getRecipe as ReturnType<typeof vi.fn>;
+      mockGetRecipe.mockResolvedValue({ recipe: {} });
+
+      const client = new FatSecretClient(baseConfig);
+      const options = { region: "US", language: "en" };
+      await client.getRecipe("67890", options);
+
+      expect(mockGetRecipe).toHaveBeenCalledWith(
+        expect.any(Object),
+        "67890",
+        options
       );
     });
   });

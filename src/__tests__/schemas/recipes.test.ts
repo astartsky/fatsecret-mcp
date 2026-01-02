@@ -45,6 +45,113 @@ describe("RecipeSearchResponseSchema", () => {
       expect(Array.isArray(result.data.recipes.recipe)).toBe(true);
     }
   });
+
+  it("should validate recipe with nutrition info", () => {
+    const responseWithNutrition = {
+      recipes: {
+        recipe: [
+          {
+            recipe_id: "123",
+            recipe_name: "Chicken Salad",
+            recipe_description: "A healthy dish",
+            recipe_nutrition: {
+              calories: "350",
+              fat: "12",
+              carbohydrate: "25",
+              protein: "30",
+            },
+          },
+        ],
+        max_results: "20",
+        page_number: "0",
+        total_results: "1",
+      },
+    };
+
+    const result = RecipeSearchResponseSchema.safeParse(responseWithNutrition);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recipes.recipe?.[0]?.recipe_nutrition?.calories).toBe("350");
+    }
+  });
+
+  it("should validate recipe with ingredients list", () => {
+    const responseWithIngredients = {
+      recipes: {
+        recipe: [
+          {
+            recipe_id: "123",
+            recipe_name: "Chicken Salad",
+            recipe_description: "A healthy dish",
+            recipe_ingredients: {
+              ingredient: ["Chicken breast", "Lettuce", "Tomatoes"],
+            },
+          },
+        ],
+        max_results: "20",
+        page_number: "0",
+        total_results: "1",
+      },
+    };
+
+    const result = RecipeSearchResponseSchema.safeParse(responseWithIngredients);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recipes.recipe?.[0]?.recipe_ingredients?.ingredient).toHaveLength(3);
+    }
+  });
+
+  it("should validate recipe with recipe types", () => {
+    const responseWithTypes = {
+      recipes: {
+        recipe: [
+          {
+            recipe_id: "123",
+            recipe_name: "Chicken Salad",
+            recipe_description: "A healthy dish",
+            recipe_types: {
+              recipe_type: ["Main Dish", "Salad"],
+            },
+          },
+        ],
+        max_results: "20",
+        page_number: "0",
+        total_results: "1",
+      },
+    };
+
+    const result = RecipeSearchResponseSchema.safeParse(responseWithTypes);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recipes.recipe?.[0]?.recipe_types?.recipe_type).toHaveLength(2);
+    }
+  });
+
+  it("should normalize single ingredient to array", () => {
+    const responseWithSingleIngredient = {
+      recipes: {
+        recipe: [
+          {
+            recipe_id: "123",
+            recipe_name: "Simple Recipe",
+            recipe_description: "One ingredient only",
+            recipe_ingredients: {
+              ingredient: "Salt",
+            },
+          },
+        ],
+        max_results: "20",
+        page_number: "0",
+        total_results: "1",
+      },
+    };
+
+    const result = RecipeSearchResponseSchema.safeParse(responseWithSingleIngredient);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(Array.isArray(result.data.recipes.recipe?.[0]?.recipe_ingredients?.ingredient)).toBe(true);
+    }
+  });
 });
 
 describe("RecipeDetailResponseSchema", () => {

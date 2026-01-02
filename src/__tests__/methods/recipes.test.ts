@@ -88,15 +88,15 @@ describe("searchRecipes", () => {
     );
   });
 
-  it("should search with recipe type filter", async () => {
+  it("should search with recipe types filter", async () => {
     mockMakeApiRequest.mockResolvedValue({ recipes: { recipe: [] } });
 
-    await searchRecipes(testConfig, "soup", { recipeType: "Main Dish" });
+    await searchRecipes(testConfig, "soup", { recipeTypes: "Main Dish" });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
       "GET",
       expect.objectContaining({
-        recipe_type: "Main Dish",
+        recipe_types: "Main Dish",
       }),
       testConfig,
       false,
@@ -110,7 +110,7 @@ describe("searchRecipes", () => {
     await searchRecipes(testConfig, "salad", {
       pageNumber: 1,
       maxResults: 30,
-      recipeType: "Side Dish",
+      recipeTypes: "Side Dish",
     });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
@@ -120,7 +120,7 @@ describe("searchRecipes", () => {
         search_expression: "salad",
         page_number: "1",
         max_results: "30",
-        recipe_type: "Side Dish",
+        recipe_types: "Side Dish",
       },
       testConfig,
       false,
@@ -128,13 +128,13 @@ describe("searchRecipes", () => {
     );
   });
 
-  it("should not include recipe_type when not provided", async () => {
+  it("should not include recipe_types when not provided", async () => {
     mockMakeApiRequest.mockResolvedValue({ recipes: { recipe: [] } });
 
     await searchRecipes(testConfig, "test", {});
 
     const callArgs = mockMakeApiRequest.mock.calls[0][1];
-    expect(callArgs).not.toHaveProperty("recipe_type");
+    expect(callArgs).not.toHaveProperty("recipe_types");
   });
 
   it("should use useAccessToken=false for public search", async () => {
@@ -284,5 +284,46 @@ describe("getRecipe", () => {
     const result = await getRecipe(testConfig, "456");
 
     expect(result.recipe.ingredients?.ingredient).toHaveLength(3);
+  });
+
+  it("should include region and language when provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({
+      recipe: {
+        recipe_id: "123",
+        recipe_name: "Test",
+        recipe_description: "Test recipe",
+      },
+    });
+
+    await getRecipe(testConfig, "123", { region: "US", language: "en" });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "GET",
+      expect.objectContaining({
+        method: "recipe.get",
+        recipe_id: "123",
+        region: "US",
+        language: "en",
+      }),
+      testConfig,
+      false,
+      expect.anything()
+    );
+  });
+
+  it("should not include region and language when not provided", async () => {
+    mockMakeApiRequest.mockResolvedValue({
+      recipe: {
+        recipe_id: "123",
+        recipe_name: "Test",
+        recipe_description: "Test recipe",
+      },
+    });
+
+    await getRecipe(testConfig, "123");
+
+    const callArgs = mockMakeApiRequest.mock.calls[0][1];
+    expect(callArgs).not.toHaveProperty("region");
+    expect(callArgs).not.toHaveProperty("language");
   });
 });

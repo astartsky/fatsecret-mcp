@@ -5,7 +5,7 @@ import {
   type FoodSearchResponseParsed,
   type FoodDetailResponseParsed,
 } from "../schemas/index.js";
-import type { FatSecretConfig } from "../types.js";
+import type { FatSecretConfig, SearchFoodsOptions, GetFoodOptions } from "../types.js";
 
 /**
  * Search for foods in the FatSecret database
@@ -13,21 +13,35 @@ import type { FatSecretConfig } from "../types.js";
 export async function searchFoods(
   config: FatSecretConfig,
   searchExpression: string,
-  pageNumber: number = 0,
-  maxResults: number = 20
+  options: SearchFoodsOptions = {}
 ): Promise<FoodSearchResponseParsed> {
-  return makeApiRequest(
-    "GET",
-    {
-      method: "foods.search",
-      search_expression: searchExpression,
-      page_number: pageNumber.toString(),
-      max_results: maxResults.toString(),
-    },
-    config,
-    false,
-    FoodSearchResponseSchema
-  );
+  const params: Record<string, string> = {
+    method: "foods.search",
+    search_expression: searchExpression,
+    page_number: (options.pageNumber ?? 0).toString(),
+    max_results: (options.maxResults ?? 20).toString(),
+  };
+
+  if (options.includeSubCategories) {
+    params.include_sub_categories = "true";
+  }
+  if (options.includeFoodImages) {
+    params.include_food_images = "true";
+  }
+  if (options.includeFoodAttributes) {
+    params.include_food_attributes = "true";
+  }
+  if (options.flagDefaultServing) {
+    params.flag_default_serving = "true";
+  }
+  if (options.region) {
+    params.region = options.region;
+  }
+  if (options.language) {
+    params.language = options.language;
+  }
+
+  return makeApiRequest("GET", params, config, false, FoodSearchResponseSchema);
 }
 
 /**
@@ -35,20 +49,36 @@ export async function searchFoods(
  */
 export async function getFood(
   config: FatSecretConfig,
-  foodId: string
+  foodId: string,
+  options: GetFoodOptions = {}
 ): Promise<FoodDetailResponseParsed> {
   if (!foodId) {
     throw new Error("Food ID is required");
   }
 
-  return makeApiRequest(
-    "GET",
-    {
-      method: "food.get",
-      food_id: foodId,
-    },
-    config,
-    false,
-    FoodDetailResponseSchema
-  );
+  const params: Record<string, string> = {
+    method: "food.get",
+    food_id: foodId,
+  };
+
+  if (options.includeSubCategories) {
+    params.include_sub_categories = "true";
+  }
+  if (options.includeFoodImages) {
+    params.include_food_images = "true";
+  }
+  if (options.includeFoodAttributes) {
+    params.include_food_attributes = "true";
+  }
+  if (options.flagDefaultServing) {
+    params.flag_default_serving = "true";
+  }
+  if (options.region) {
+    params.region = options.region;
+  }
+  if (options.language) {
+    params.language = options.language;
+  }
+
+  return makeApiRequest("GET", params, config, false, FoodDetailResponseSchema);
 }

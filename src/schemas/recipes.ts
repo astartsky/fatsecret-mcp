@@ -1,12 +1,35 @@
 import { z } from "zod";
 import { optionalSingleOrArray } from "./utils.js";
 
+const RecipeNutritionSchema = z.object({
+  calories: z.string().optional(),
+  fat: z.string().optional(),
+  carbohydrate: z.string().optional(),
+  protein: z.string().optional(),
+  saturated_fat: z.string().optional(),
+  polyunsaturated_fat: z.string().optional(),
+  monounsaturated_fat: z.string().optional(),
+  cholesterol: z.string().optional(),
+  sodium: z.string().optional(),
+  potassium: z.string().optional(),
+  fiber: z.string().optional(),
+  sugar: z.string().optional(),
+});
+
+// Recipe item in search results (v3)
 const RecipeItemSchema = z.object({
   recipe_id: z.string(),
   recipe_name: z.string(),
   recipe_description: z.string(),
   recipe_image: z.string().optional(),
   recipe_url: z.string().optional(),
+  recipe_nutrition: RecipeNutritionSchema.optional(),
+  recipe_ingredients: z.object({
+    ingredient: optionalSingleOrArray(z.string()),
+  }).optional(),
+  recipe_types: z.object({
+    recipe_type: optionalSingleOrArray(z.string()),
+  }).optional(),
 });
 
 const IngredientSchema = z.object({
@@ -22,21 +45,6 @@ const IngredientSchema = z.object({
 const DirectionSchema = z.object({
   direction_number: z.string(),
   direction_description: z.string(),
-});
-
-const RecipeNutritionSchema = z.object({
-  calories: z.string().optional(),
-  fat: z.string().optional(),
-  carbohydrate: z.string().optional(),
-  protein: z.string().optional(),
-  saturated_fat: z.string().optional(),
-  polyunsaturated_fat: z.string().optional(),
-  monounsaturated_fat: z.string().optional(),
-  cholesterol: z.string().optional(),
-  sodium: z.string().optional(),
-  potassium: z.string().optional(),
-  fiber: z.string().optional(),
-  sugar: z.string().optional(),
 });
 
 export const RecipeSearchResponseSchema = z.object({
@@ -59,6 +67,9 @@ export const RecipeDetailResponseSchema = z.object({
     preparation_time_min: z.string().optional(),
     cooking_time_min: z.string().optional(),
     rating: z.string().optional(),
+    recipe_types: z.object({
+      recipe_type: optionalSingleOrArray(z.string()),
+    }).optional(),
     ingredients: z.object({
       ingredient: optionalSingleOrArray(IngredientSchema),
     }).optional(),
@@ -75,3 +86,4 @@ export type RecipeSearchResponseParsed = z.infer<typeof RecipeSearchResponseSche
 export type RecipeDetailResponseParsed = z.infer<typeof RecipeDetailResponseSchema>;
 export type RecipeItem = z.infer<typeof RecipeItemSchema>;
 export type Ingredient = z.infer<typeof IngredientSchema>;
+export type RecipeNutrition = z.infer<typeof RecipeNutritionSchema>;
