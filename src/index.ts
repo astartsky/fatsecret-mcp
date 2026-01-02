@@ -235,6 +235,14 @@ class FatSecretMCPServer {
     // Add signature to the parameters
     allParams.oauth_signature = signature;
 
+    // Use percent encoding (RFC 3986) instead of querystring.stringify
+    // which encodes spaces as '+' instead of '%20', causing signature mismatch
+    const encodeParams = (params: Record<string, string>): string => {
+      return Object.keys(params)
+        .map((key) => `${this.percentEncode(key)}=${this.percentEncode(params[key])}`)
+        .join("&");
+    };
+
     const options: any = {
       method,
       headers: {},
@@ -242,10 +250,10 @@ class FatSecretMCPServer {
 
     let requestUrl = url;
     if (method === "GET") {
-      requestUrl += "?" + querystring.stringify(allParams);
+      requestUrl += "?" + encodeParams(allParams);
     } else if (method === "POST") {
       options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-      options.body = querystring.stringify(allParams);
+      options.body = encodeParams(allParams);
     }
 
     const response = await fetch(requestUrl, options);
@@ -304,6 +312,14 @@ class FatSecretMCPServer {
     // Add signature to the parameters
     allParams.oauth_signature = signature;
 
+    // Use percent encoding (RFC 3986) instead of querystring.stringify
+    // which encodes spaces as '+' instead of '%20', causing signature mismatch
+    const encodeParams = (params: Record<string, string>): string => {
+      return Object.keys(params)
+        .map((key) => `${this.percentEncode(key)}=${this.percentEncode(params[key])}`)
+        .join("&");
+    };
+
     const options: any = {
       method,
       headers: {},
@@ -311,10 +327,10 @@ class FatSecretMCPServer {
 
     let requestUrl = url;
     if (method === "GET") {
-      requestUrl += "?" + querystring.stringify(allParams);
+      requestUrl += "?" + encodeParams(allParams);
     } else if (method === "POST") {
       options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-      options.body = querystring.stringify(allParams);
+      options.body = encodeParams(allParams);
     }
 
     const response = await fetch(requestUrl, options);
