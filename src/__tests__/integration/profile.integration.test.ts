@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { hasAuthTokens, authConfig, API_TIMEOUT } from "./setup.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { hasAuthTokens, authConfig, API_TIMEOUT, waitForRateLimit } from "./setup.js";
 import { getProfile } from "../../methods/profile.js";
+
+beforeEach(async () => {
+  await waitForRateLimit();
+});
 
 describe.skipIf(!hasAuthTokens)("Profile Integration Tests", () => {
   describe("getProfile", () => {

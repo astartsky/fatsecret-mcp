@@ -16,5 +16,12 @@ export const WeightMonthResponseSchema = z.object({
   }),
 });
 
+export const WeightUpdateResponseSchema = z.object({
+  success: z.object({
+    value: z.string(),
+  }),
+});
+
 export type WeightMonthResponseParsed = z.infer<typeof WeightMonthResponseSchema>;
+export type WeightUpdateResponseParsed = z.infer<typeof WeightUpdateResponseSchema>;
 export type WeightEntry = z.infer<typeof WeightEntrySchema>;

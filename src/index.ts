@@ -195,6 +195,56 @@ class FatSecretMCPServer {
               },
             },
           },
+          {
+            name: "edit_food_entry",
+            description: "Edit an existing food diary entry",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodEntryId: { type: "string", description: "The food entry ID to edit" },
+                foodName: { type: "string", description: "New name/description for the food entry" },
+                servingId: { type: "string", description: "New serving ID" },
+                quantity: { type: "number", description: "New quantity" },
+                mealType: { type: "string", description: "New meal type (breakfast, lunch, dinner, other)", enum: ["breakfast", "lunch", "dinner", "other"] },
+              },
+              required: ["foodEntryId"],
+            },
+          },
+          {
+            name: "delete_food_entry",
+            description: "Delete a food diary entry",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodEntryId: { type: "string", description: "The food entry ID to delete" },
+              },
+              required: ["foodEntryId"],
+            },
+          },
+          {
+            name: "get_food_entries_month",
+            description: "Get summary of user's food diary entries for a month",
+            inputSchema: {
+              type: "object",
+              properties: {
+                date: { type: "string", description: "Date in YYYY-MM-DD format to specify the month (default: current month)" },
+              },
+            },
+          },
+          {
+            name: "update_weight",
+            description: "Add or update a weight entry",
+            inputSchema: {
+              type: "object",
+              properties: {
+                currentWeightKg: { type: "number", description: "Current weight in kilograms" },
+                date: { type: "string", description: "Date in YYYY-MM-DD format (default: today)" },
+                goalWeightKg: { type: "number", description: "Goal weight in kilograms" },
+                comment: { type: "string", description: "Optional comment for the weight entry" },
+              },
+              required: ["currentWeightKg"],
+            },
+          },
         ],
       };
     });
@@ -228,6 +278,14 @@ class FatSecretMCPServer {
             return await this.handleCheckAuthStatus();
           case "get_weight_month":
             return await this.handleGetWeightMonth(request.params.arguments);
+          case "edit_food_entry":
+            return await this.handleEditFoodEntry(request.params.arguments);
+          case "delete_food_entry":
+            return await this.handleDeleteFoodEntry(request.params.arguments);
+          case "get_food_entries_month":
+            return await this.handleGetFoodEntriesMonth(request.params.arguments);
+          case "update_weight":
+            return await this.handleUpdateWeight(request.params.arguments);
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
         }
@@ -414,6 +472,71 @@ class FatSecretMCPServer {
 
     const response = await this.client.getWeightMonth(args?.date);
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleEditFoodEntry(args: any) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.editFoodEntry({
+      foodEntryId: args.foodEntryId,
+      foodName: args.foodName,
+      servingId: args.servingId,
+      quantity: args.quantity,
+      mealType: args.mealType,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Food entry updated successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleDeleteFoodEntry(args: any) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.deleteFoodEntry(args.foodEntryId);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Food entry deleted successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleGetFoodEntriesMonth(args: any) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getFoodEntriesMonth(args?.date);
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleUpdateWeight(args: any) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.updateWeight({
+      currentWeightKg: args.currentWeightKg,
+      date: args.date,
+      goalWeightKg: args.goalWeightKg,
+      comment: args.comment,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Weight entry updated successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
   }
 
   async run() {

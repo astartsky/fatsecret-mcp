@@ -41,3 +41,20 @@ export const authConfig: FatSecretConfig = {
  * Test timeout for API calls (longer than default due to network latency)
  */
 export const API_TIMEOUT = 30000;
+
+/**
+ * Delay between API calls to avoid rate limiting
+ */
+export const RATE_LIMIT_DELAY = 2000; // 2 seconds
+
+/**
+ * Helper to wait for rate limit delay
+ */
+export const waitForRateLimit = (): Promise<void> =>
+  new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+
+/**
+ * Check if Premier API features are enabled (autocomplete, barcode)
+ * Set FATSECRET_PREMIER=true in .env to enable these tests
+ */
+export const hasPremierAccess = process.env.FATSECRET_PREMIER === "true";

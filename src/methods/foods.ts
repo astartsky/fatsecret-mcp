@@ -82,3 +82,7 @@ export async function getFood(
 
   return makeApiRequest("GET", params, config, false, FoodDetailResponseSchema);
 }
+
+// NOTE: foods.autocomplete and food.find_id_for_barcode methods are not implemented
+// because they require OAuth 2.0 authentication which is not yet supported.
+// See: https://platform.fatsecret.com/docs/guides/authentication/oauth2

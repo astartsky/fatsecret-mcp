@@ -39,15 +39,24 @@ export {
 export {
   FoodEntriesResponseSchema,
   FoodEntryCreateResponseSchema,
+  FoodEntryEditResponseSchema,
+  FoodEntryDeleteResponseSchema,
+  FoodEntriesMonthResponseSchema,
   type FoodEntriesResponseParsed,
   type FoodEntryCreateResponseParsed,
+  type FoodEntryEditResponseParsed,
+  type FoodEntryDeleteResponseParsed,
+  type FoodEntriesMonthResponseParsed,
   type FoodEntry,
+  type DaySummary,
 } from "./diary.js";
 
 // Weight schemas
 export {
   WeightMonthResponseSchema,
+  WeightUpdateResponseSchema,
   type WeightMonthResponseParsed,
+  type WeightUpdateResponseParsed,
   type WeightEntry,
 } from "./weight.js";
 

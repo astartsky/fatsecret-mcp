@@ -349,3 +349,5 @@ describe("getFood", () => {
     );
   });
 });
+
+// NOTE: autocompleteFood and findFoodByBarcode tests removed - require OAuth 2.0

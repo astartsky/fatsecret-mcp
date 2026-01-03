@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getWeightMonth } from "../../methods/weight.js";
+import { getWeightMonth, updateWeight } from "../../methods/weight.js";
 import type { FatSecretConfig } from "../../types.js";
-import type { WeightMonthResponseParsed } from "../../schemas.js";
+import type { WeightMonthResponseParsed, WeightUpdateResponseParsed } from "../../schemas.js";
 
 // Mock the request module
 vi.mock("../../oauth/request.js", () => ({
@@ -233,5 +233,286 @@ describe("getWeightMonth", () => {
     const result = await getWeightMonth(authenticatedConfig);
 
     expect(result.month.day).toHaveLength(1);
+  });
+});
+
+describe("updateWeight", () => {
+  let mockMakeApiRequest: ReturnType<typeof vi.fn>;
+  let mockDateToFatSecretFormat: ReturnType<typeof vi.fn>;
+
+  const authenticatedConfig: FatSecretConfig = {
+    clientId: "test_client_id",
+    clientSecret: "test_client_secret",
+    accessToken: "test_access_token",
+    accessTokenSecret: "test_access_secret",
+  };
+
+  const unauthenticatedConfig: FatSecretConfig = {
+    clientId: "test_client_id",
+    clientSecret: "test_client_secret",
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const requestModule = await import("../../oauth/request.js");
+    mockMakeApiRequest = requestModule.makeApiRequest as ReturnType<typeof vi.fn>;
+    const dateModule = await import("../../utils/date.js");
+    mockDateToFatSecretFormat = dateModule.dateToFatSecretFormat as ReturnType<typeof vi.fn>;
+  });
+
+  it("should update weight with required params only", async () => {
+    const mockResponse: WeightUpdateResponseParsed = {
+      success: { value: "1" },
+    };
+
+    mockMakeApiRequest.mockResolvedValue(mockResponse);
+
+    const result = await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      {
+        method: "weight.update",
+        current_weight_kg: "75.5",
+      },
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("should update weight with all optional params", async () => {
+    const mockResponse: WeightUpdateResponseParsed = {
+      success: { value: "1" },
+    };
+
+    mockMakeApiRequest.mockResolvedValue(mockResponse);
+
+    const result = await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      date: "2024-01-15",
+      weightType: "kg",
+      heightType: "cm",
+      goalWeightKg: 70.0,
+      currentHeightCm: 180,
+      comment: "Morning weight",
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      {
+        method: "weight.update",
+        current_weight_kg: "75.5",
+        date: "19737",
+        weight_type: "kg",
+        height_type: "cm",
+        goal_weight_kg: "70",
+        current_height_cm: "180",
+        weight_comment: "Morning weight",
+      },
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("should throw error when access token is missing", async () => {
+    await expect(
+      updateWeight(unauthenticatedConfig, { currentWeightKg: 75.5 })
+    ).rejects.toThrow("User authentication required");
+  });
+
+  it("should throw error when access token secret is missing", async () => {
+    const configWithoutSecret: FatSecretConfig = {
+      clientId: "test_client_id",
+      clientSecret: "test_client_secret",
+      accessToken: "test_access_token",
+    };
+
+    await expect(
+      updateWeight(configWithoutSecret, { currentWeightKg: 75.5 })
+    ).rejects.toThrow("User authentication required");
+  });
+
+  it("should throw error when weight is zero", async () => {
+    await expect(
+      updateWeight(authenticatedConfig, { currentWeightKg: 0 })
+    ).rejects.toThrow("Weight must be greater than 0");
+  });
+
+  it("should throw error when weight is negative", async () => {
+    await expect(
+      updateWeight(authenticatedConfig, { currentWeightKg: -5 })
+    ).rejects.toThrow("Weight must be greater than 0");
+  });
+
+  it("should use POST method", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, { currentWeightKg: 75.5 });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.any(Object),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+  });
+
+  it("should use useAccessToken=true for authenticated request", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, { currentWeightKg: 75.5 });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.any(Object),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+  });
+
+  it("should not make API call when auth validation fails", async () => {
+    try {
+      await updateWeight(unauthenticatedConfig, { currentWeightKg: 75.5 });
+    } catch {
+      // expected
+    }
+
+    expect(mockMakeApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("should not make API call when weight validation fails", async () => {
+    try {
+      await updateWeight(authenticatedConfig, { currentWeightKg: 0 });
+    } catch {
+      // expected
+    }
+
+    expect(mockMakeApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("should convert date via dateToFatSecretFormat", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      date: "2024-01-15",
+    });
+
+    expect(mockDateToFatSecretFormat).toHaveBeenCalledWith("2024-01-15");
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.objectContaining({
+        date: "19737",
+      }),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+  });
+
+  it("should only include provided optional params", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      weightType: "lb",
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      {
+        method: "weight.update",
+        current_weight_kg: "75.5",
+        weight_type: "lb",
+      },
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+
+    // Verify that undefined optional params are not included
+    const callArgs = mockMakeApiRequest.mock.calls[0][1];
+    expect(callArgs).not.toHaveProperty("date");
+    expect(callArgs).not.toHaveProperty("height_type");
+    expect(callArgs).not.toHaveProperty("goal_weight_kg");
+    expect(callArgs).not.toHaveProperty("current_height_cm");
+    expect(callArgs).not.toHaveProperty("weight_comment");
+  });
+
+  it("should call weight.update method", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, { currentWeightKg: 75.5 });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.objectContaining({
+        method: "weight.update",
+      }),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+  });
+
+  it("should convert numeric params to strings", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      goalWeightKg: 70.0,
+      currentHeightCm: 180,
+    });
+
+    const callArgs = mockMakeApiRequest.mock.calls[0][1];
+    expect(typeof callArgs.current_weight_kg).toBe("string");
+    expect(typeof callArgs.goal_weight_kg).toBe("string");
+    expect(typeof callArgs.current_height_cm).toBe("string");
+  });
+
+  it("should handle weight with lb type", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      weightType: "lb",
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.objectContaining({
+        weight_type: "lb",
+      }),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
+  });
+
+  it("should handle height with inch type", async () => {
+    mockMakeApiRequest.mockResolvedValue({ success: { value: "1" } });
+
+    await updateWeight(authenticatedConfig, {
+      currentWeightKg: 75.5,
+      heightType: "inch",
+    });
+
+    expect(mockMakeApiRequest).toHaveBeenCalledWith(
+      "POST",
+      expect.objectContaining({
+        height_type: "inch",
+      }),
+      authenticatedConfig,
+      true,
+      expect.anything()
+    );
   });
 });

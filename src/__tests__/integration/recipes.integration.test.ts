@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { hasCredentials, config, API_TIMEOUT } from "./setup.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { hasCredentials, config, API_TIMEOUT, waitForRateLimit } from "./setup.js";
 import { searchRecipes, getRecipe } from "../../methods/recipes.js";
+
+beforeEach(async () => {
+  await waitForRateLimit();
+});
 
 describe.skipIf(!hasCredentials)("Recipes Integration Tests", () => {
   describe("searchRecipes", () => {

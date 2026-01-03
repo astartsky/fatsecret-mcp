@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { hasCredentials, config, API_TIMEOUT } from "./setup.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { hasCredentials, config, API_TIMEOUT, waitForRateLimit } from "./setup.js";
 import { searchFoods, getFood } from "../../methods/foods.js";
+
+beforeEach(async () => {
+  await waitForRateLimit();
+});
 
 describe.skipIf(!hasCredentials)("Foods Integration Tests", () => {
   describe("searchFoods", () => {
@@ -176,4 +180,6 @@ describe.skipIf(!hasCredentials)("Foods Integration Tests", () => {
       API_TIMEOUT
     );
   });
+
+  // NOTE: autocompleteFood and findFoodByBarcode tests removed - require OAuth 2.0
 });

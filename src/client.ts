@@ -1,6 +1,8 @@
 import type {
   FatSecretConfig,
   CreateFoodEntryParams,
+  EditFoodEntryParams,
+  UpdateWeightParams,
   SearchFoodsOptions,
   GetFoodOptions,
   SearchRecipesOptions,
@@ -14,7 +16,11 @@ import type {
   ProfileResponseParsed,
   FoodEntriesResponseParsed,
   FoodEntryCreateResponseParsed,
+  FoodEntryEditResponseParsed,
+  FoodEntryDeleteResponseParsed,
+  FoodEntriesMonthResponseParsed,
   WeightMonthResponseParsed,
+  WeightUpdateResponseParsed,
   OAuthTokenResponseParsed,
   AccessTokenResponseParsed,
 } from "./schemas/index.js";
@@ -84,9 +90,25 @@ export class FatSecretClient {
     return methods.createFoodEntry(this.config, params);
   }
 
+  editFoodEntry(params: EditFoodEntryParams): Promise<FoodEntryEditResponseParsed> {
+    return methods.editFoodEntry(this.config, params);
+  }
+
+  deleteFoodEntry(foodEntryId: string): Promise<FoodEntryDeleteResponseParsed> {
+    return methods.deleteFoodEntry(this.config, foodEntryId);
+  }
+
+  getFoodEntriesMonth(date?: string): Promise<FoodEntriesMonthResponseParsed> {
+    return methods.getFoodEntriesMonth(this.config, date);
+  }
+
   // Weight
   getWeightMonth(date?: string): Promise<WeightMonthResponseParsed> {
     return methods.getWeightMonth(this.config, date);
+  }
+
+  updateWeight(params: UpdateWeightParams): Promise<WeightUpdateResponseParsed> {
+    return methods.updateWeight(this.config, params);
   }
 
   // OAuth

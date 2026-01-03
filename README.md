@@ -7,8 +7,15 @@ A Model Context Protocol (MCP) server that provides access to the FatSecret nutr
 - **Complete OAuth 1.0a Implementation**: Full 3-legged OAuth flow for user authentication
 - **Food Database Access**: Search and retrieve detailed nutrition information
 - **Recipe Database**: Search for recipes and get detailed cooking instructions
-- **User Data Management**: Access user food diaries and add food entries
+- **User Data Management**: Access user food diaries, weight tracking, and add entries
 - **Secure Credential Storage**: Encrypted storage of API credentials and tokens
+
+### Not Yet Implemented (Requires OAuth 2.0)
+
+The following features require OAuth 2.0 authentication which is not yet supported:
+
+- `foods.autocomplete` — Food name autocomplete suggestions
+- `food.find_id_for_barcode` — Barcode scanning lookup
 
 ## Getting Started
 
@@ -265,10 +272,58 @@ Add a food entry to the user's diary.
 **Parameters:**
 
 - `foodId` (string, required): FatSecret food ID
+- `foodName` (string, required): Name/description of the food item
 - `servingId` (string, required): Serving ID for the food
 - `quantity` (number, required): Quantity of the serving
-- `mealType` (string, required): Meal type (breakfast, lunch, dinner, snack)
+- `mealType` (string, required): Meal type (breakfast, lunch, dinner, other)
 - `date` (string, optional): Date in YYYY-MM-DD format (default: today)
+
+#### `edit_food_entry`
+
+Edit an existing food diary entry.
+
+**Parameters:**
+
+- `foodEntryId` (string, required): The food entry ID to edit
+- `foodName` (string, optional): New name/description
+- `servingId` (string, optional): New serving ID
+- `quantity` (number, optional): New quantity
+- `mealType` (string, optional): New meal type (breakfast, lunch, dinner, other)
+
+#### `delete_food_entry`
+
+Delete a food diary entry.
+
+**Parameters:**
+
+- `foodEntryId` (string, required): The food entry ID to delete
+
+#### `get_food_entries_month`
+
+Get summary of user's food diary entries for a month.
+
+**Parameters:**
+
+- `date` (string, optional): Date in YYYY-MM-DD format to specify the month (default: current month)
+
+#### `get_weight_month`
+
+Get user's weight entries for a specific month.
+
+**Parameters:**
+
+- `date` (string, optional): Date in YYYY-MM-DD format to specify the month (default: current month)
+
+#### `update_weight`
+
+Add or update a weight entry.
+
+**Parameters:**
+
+- `currentWeightKg` (number, required): Current weight in kilograms
+- `date` (string, optional): Date in YYYY-MM-DD format (default: today)
+- `goalWeightKg` (number, optional): Goal weight in kilograms
+- `comment` (string, optional): Optional comment for the weight entry
 
 ## Example Workflow
 
@@ -404,8 +459,8 @@ npm run test:integration
 | Foods | `searchFoods`, `getFood` | 9 |
 | Recipes | `searchRecipes`, `getRecipe` | 11 |
 | Profile | `getProfile` | 5 |
-| Diary | `getFoodEntries`, `createFoodEntry` | 7 |
-| Weight | `getWeightMonth` | 7 |
+| Diary | `getFoodEntries`, `createFoodEntry`, `editFoodEntry`, `deleteFoodEntry`, `getFoodEntriesMonth` | 16 |
+| Weight | `getWeightMonth`, `updateWeight` | 12 |
 
 **Notes:**
 - Tests are automatically skipped when credentials are not available

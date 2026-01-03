@@ -98,6 +98,8 @@ export const FoodDetailResponseSchema = z.object({
   }),
 });
 
+// NOTE: Autocomplete and Barcode schemas not implemented - require OAuth 2.0
+
 export type FoodSearchResponseParsed = z.infer<typeof FoodSearchResponseSchema>;
 export type FoodDetailResponseParsed = z.infer<typeof FoodDetailResponseSchema>;
 export type FoodItem = z.infer<typeof FoodItemSchema>;

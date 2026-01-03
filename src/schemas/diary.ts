@@ -35,6 +35,40 @@ export const FoodEntryCreateResponseSchema = z.object({
   }),
 });
 
+// Success response for edit/delete operations
+export const FoodEntryEditResponseSchema = z.object({
+  success: z.object({
+    value: z.string(),
+  }),
+});
+
+export const FoodEntryDeleteResponseSchema = z.object({
+  success: z.object({
+    value: z.string(),
+  }),
+});
+
+// Day summary for monthly view
+const DaySummarySchema = z.object({
+  date_int: z.string(),
+  calories: z.string().optional(),
+  carbohydrate: z.string().optional(),
+  protein: z.string().optional(),
+  fat: z.string().optional(),
+});
+
+export const FoodEntriesMonthResponseSchema = z.object({
+  month: z.object({
+    from_date_int: z.string(),
+    to_date_int: z.string(),
+    day: optionalSingleOrArray(DaySummarySchema),
+  }).nullable().optional().transform(val => val ?? { from_date_int: "", to_date_int: "", day: [] }),
+});
+
 export type FoodEntriesResponseParsed = z.infer<typeof FoodEntriesResponseSchema>;
 export type FoodEntryCreateResponseParsed = z.infer<typeof FoodEntryCreateResponseSchema>;
+export type FoodEntryEditResponseParsed = z.infer<typeof FoodEntryEditResponseSchema>;
+export type FoodEntryDeleteResponseParsed = z.infer<typeof FoodEntryDeleteResponseSchema>;
+export type FoodEntriesMonthResponseParsed = z.infer<typeof FoodEntriesMonthResponseSchema>;
 export type FoodEntry = z.infer<typeof FoodEntrySchema>;
+export type DaySummary = z.infer<typeof DaySummarySchema>;

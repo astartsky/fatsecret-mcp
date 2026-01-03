@@ -30,6 +30,26 @@ export interface CreateFoodEntryParams {
   date?: string;
 }
 
+export interface EditFoodEntryParams {
+  foodEntryId: string;
+  foodName?: string;
+  servingId?: string;
+  quantity?: number;
+  mealType?: string;
+}
+
+export interface UpdateWeightParams {
+  currentWeightKg: number;
+  date?: string;
+  weightType?: 'kg' | 'lb';
+  heightType?: 'cm' | 'inch';
+  goalWeightKg?: number;
+  currentHeightCm?: number;
+  comment?: string;
+}
+
+// NOTE: AutocompleteOptions and FindByBarcodeOptions not implemented - require OAuth 2.0
+
 export interface SearchFoodsOptions {
   pageNumber?: number;
   maxResults?: number;
