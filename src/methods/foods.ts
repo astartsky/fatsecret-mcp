@@ -15,6 +15,21 @@ export async function searchFoods(
   searchExpression: string,
   options: SearchFoodsOptions = {}
 ): Promise<FoodSearchResponseParsed> {
+  // Input validation
+  if (!searchExpression || searchExpression.trim() === "") {
+    throw new Error("Search expression is required and cannot be empty");
+  }
+
+  if (options.pageNumber !== undefined && options.pageNumber < 0) {
+    throw new Error("Page number cannot be negative");
+  }
+
+  if (options.maxResults !== undefined) {
+    if (options.maxResults < 1 || options.maxResults > 50) {
+      throw new Error("maxResults must be between 1 and 50");
+    }
+  }
+
   const params: Record<string, string> = {
     method: "foods.search",
     search_expression: searchExpression,

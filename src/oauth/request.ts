@@ -40,19 +40,30 @@ function validateResponse<T>(
 }
 
 /**
- * Make an OAuth 1.0 authenticated request
+ * Internal options for OAuth request execution
  */
-export async function makeOAuthRequest<T>(
-  method: HttpMethod,
-  url: string,
-  params: Record<string, string>,
-  config: FatSecretConfig,
-  token: string | undefined,
-  tokenSecret: string | undefined,
+interface ExecuteRequestOptions {
+  method: HttpMethod;
+  url: string;
+  params: Record<string, string>;
+  config: FatSecretConfig;
+  token?: string;
+  tokenSecret?: string;
+  errorPrefix: string;
+}
+
+/**
+ * Internal function to execute OAuth 1.0 authenticated requests.
+ * Used by both makeOAuthRequest and makeApiRequest.
+ */
+async function executeRequest<T>(
+  options: ExecuteRequestOptions,
   schema: z.ZodType<T>
 ): Promise<T> {
+  const { method, url, params, config, token, tokenSecret, errorPrefix } = options;
+
   const oauthParams = buildOAuthParams(config.clientId, token);
-  const allParams = { ...params, ...oauthParams };
+  const allParams: Record<string, string> = { ...params, ...oauthParams };
 
   const signature = generateSignature(
     method,
@@ -61,10 +72,9 @@ export async function makeOAuthRequest<T>(
     config.clientSecret,
     tokenSecret
   );
-
   allParams.oauth_signature = signature;
 
-  const options: FetchOptions = {
+  const fetchOptions: FetchOptions = {
     method,
     headers: {},
   };
@@ -73,15 +83,15 @@ export async function makeOAuthRequest<T>(
   if (method === "GET") {
     requestUrl += "?" + encodeParams(allParams);
   } else {
-    options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-    options.body = encodeParams(allParams);
+    fetchOptions.headers["Content-Type"] = "application/x-www-form-urlencoded";
+    fetchOptions.body = encodeParams(allParams);
   }
 
-  const response = await fetch(requestUrl, options);
+  const response = await fetch(requestUrl, fetchOptions);
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`OAuth error: ${response.status} - ${text}`);
+    throw new Error(`${errorPrefix}: ${response.status} - ${text}`);
   }
 
   let data: unknown;
@@ -95,6 +105,24 @@ export async function makeOAuthRequest<T>(
 }
 
 /**
+ * Make an OAuth 1.0 authenticated request
+ */
+export async function makeOAuthRequest<T>(
+  method: HttpMethod,
+  url: string,
+  params: Record<string, string>,
+  config: FatSecretConfig,
+  token: string | undefined,
+  tokenSecret: string | undefined,
+  schema: z.ZodType<T>
+): Promise<T> {
+  return executeRequest(
+    { method, url, params, config, token, tokenSecret, errorPrefix: "OAuth error" },
+    schema
+  );
+}
+
+/**
  * Make an API request to FatSecret
  */
 export async function makeApiRequest<T>(
@@ -104,50 +132,16 @@ export async function makeApiRequest<T>(
   useAccessToken: boolean,
   schema: z.ZodType<T>
 ): Promise<T> {
-  const token = useAccessToken ? config.accessToken : undefined;
-  const tokenSecret = useAccessToken ? config.accessTokenSecret : undefined;
-
-  const oauthParams = buildOAuthParams(config.clientId, token);
-
-  // Don't mutate the original params
-  const allParams: Record<string, string> = { ...params, format: "json", ...oauthParams };
-
-  const signature = generateSignature(
-    method,
-    BASE_URL,
-    allParams,
-    config.clientSecret,
-    tokenSecret
+  return executeRequest(
+    {
+      method,
+      url: BASE_URL,
+      params: { ...params, format: "json" },
+      config,
+      token: useAccessToken ? config.accessToken : undefined,
+      tokenSecret: useAccessToken ? config.accessTokenSecret : undefined,
+      errorPrefix: "FatSecret API error",
+    },
+    schema
   );
-
-  allParams.oauth_signature = signature;
-
-  const options: FetchOptions = {
-    method,
-    headers: {},
-  };
-
-  let requestUrl = BASE_URL;
-  if (method === "GET") {
-    requestUrl += "?" + encodeParams(allParams);
-  } else {
-    options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-    options.body = encodeParams(allParams);
-  }
-
-  const response = await fetch(requestUrl, options);
-  const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`FatSecret API error: ${response.status} - ${text}`);
-  }
-
-  let data: unknown;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = querystring.parse(text);
-  }
-
-  return validateResponse(schema, data);
 }

@@ -46,6 +46,14 @@ export async function updateWeight(
     throw new Error("Weight must be greater than 0");
   }
 
+  if (params.goalWeightKg !== undefined && params.goalWeightKg <= 0) {
+    throw new Error("Goal weight must be greater than 0");
+  }
+
+  if (params.currentHeightCm !== undefined && params.currentHeightCm <= 0) {
+    throw new Error("Height must be greater than 0");
+  }
+
   const requestParams: Record<string, string> = {
     method: "weight.update",
     current_weight_kg: params.currentWeightKg.toString(),

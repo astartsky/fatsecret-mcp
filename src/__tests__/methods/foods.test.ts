@@ -132,14 +132,14 @@ describe("searchFoods", () => {
   });
 
   it("should convert max results from options to string", async () => {
-    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "100", page_number: "0", total_results: "0" } });
+    mockMakeApiRequest.mockResolvedValue({ foods: { food: [], max_results: "50", page_number: "0", total_results: "0" } });
 
-    await searchFoods(testConfig, "test", { maxResults: 100 });
+    await searchFoods(testConfig, "test", { maxResults: 50 });
 
     expect(mockMakeApiRequest).toHaveBeenCalledWith(
       "GET",
       expect.objectContaining({
-        max_results: "100",
+        max_results: "50",
       }),
       testConfig,
       false,

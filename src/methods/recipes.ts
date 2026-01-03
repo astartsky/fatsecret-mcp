@@ -15,6 +15,51 @@ export async function searchRecipes(
   searchExpression: string,
   options: SearchRecipesOptions = {}
 ): Promise<RecipeSearchResponseParsed> {
+  // Input validation
+  if (!searchExpression || searchExpression.trim() === "") {
+    throw new Error("Search expression is required and cannot be empty");
+  }
+
+  if (options.pageNumber !== undefined && options.pageNumber < 0) {
+    throw new Error("Page number cannot be negative");
+  }
+
+  if (options.maxResults !== undefined) {
+    if (options.maxResults < 1 || options.maxResults > 50) {
+      throw new Error("maxResults must be between 1 and 50");
+    }
+  }
+
+  // Validate percentage ranges (0-100)
+  const percentageFields = [
+    { name: "carbPercentageFrom", value: options.carbPercentageFrom },
+    { name: "carbPercentageTo", value: options.carbPercentageTo },
+    { name: "proteinPercentageFrom", value: options.proteinPercentageFrom },
+    { name: "proteinPercentageTo", value: options.proteinPercentageTo },
+    { name: "fatPercentageFrom", value: options.fatPercentageFrom },
+    { name: "fatPercentageTo", value: options.fatPercentageTo },
+  ];
+
+  for (const field of percentageFields) {
+    if (field.value !== undefined && (field.value < 0 || field.value > 100)) {
+      throw new Error(`${field.name} must be between 0 and 100`);
+    }
+  }
+
+  // Validate non-negative fields
+  if (options.caloriesFrom !== undefined && options.caloriesFrom < 0) {
+    throw new Error("caloriesFrom cannot be negative");
+  }
+  if (options.caloriesTo !== undefined && options.caloriesTo < 0) {
+    throw new Error("caloriesTo cannot be negative");
+  }
+  if (options.prepTimeFrom !== undefined && options.prepTimeFrom < 0) {
+    throw new Error("prepTimeFrom cannot be negative");
+  }
+  if (options.prepTimeTo !== undefined && options.prepTimeTo < 0) {
+    throw new Error("prepTimeTo cannot be negative");
+  }
+
   const params: Record<string, string> = {
     method: "recipes.search",
     search_expression: searchExpression,

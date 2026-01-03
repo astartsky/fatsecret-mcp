@@ -13,6 +13,22 @@ import path from "path";
 import os from "os";
 import * as dotenv from "dotenv";
 import { FatSecretClient, FatSecretConfig } from "./client.js";
+import type {
+  SetCredentialsInput,
+  StartOAuthFlowInput,
+  CompleteOAuthFlowInput,
+  SearchFoodsInput,
+  GetFoodInput,
+  SearchRecipesInput,
+  GetRecipeInput,
+  GetFoodEntriesInput,
+  AddFoodEntryInput,
+  EditFoodEntryInput,
+  DeleteFoodEntryInput,
+  GetFoodEntriesMonthInput,
+  GetWeightMonthInput,
+  UpdateWeightInput,
+} from "./types.js";
 
 // Suppress dotenv console output
 const originalLog = console.log;
@@ -273,40 +289,41 @@ class FatSecretMCPServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       await this.loadConfig();
 
+      const args = request.params.arguments as unknown;
       try {
         switch (request.params.name) {
           case "set_credentials":
-            return await this.handleSetCredentials(request.params.arguments);
+            return await this.handleSetCredentials(args as SetCredentialsInput);
           case "start_oauth_flow":
-            return await this.handleStartOAuthFlow(request.params.arguments);
+            return await this.handleStartOAuthFlow(args as StartOAuthFlowInput | undefined);
           case "complete_oauth_flow":
-            return await this.handleCompleteOAuthFlow(request.params.arguments);
+            return await this.handleCompleteOAuthFlow(args as CompleteOAuthFlowInput);
           case "search_foods":
-            return await this.handleSearchFoods(request.params.arguments);
+            return await this.handleSearchFoods(args as SearchFoodsInput);
           case "get_food":
-            return await this.handleGetFood(request.params.arguments);
+            return await this.handleGetFood(args as GetFoodInput);
           case "search_recipes":
-            return await this.handleSearchRecipes(request.params.arguments);
+            return await this.handleSearchRecipes(args as SearchRecipesInput);
           case "get_recipe":
-            return await this.handleGetRecipe(request.params.arguments);
+            return await this.handleGetRecipe(args as GetRecipeInput);
           case "get_user_profile":
             return await this.handleGetUserProfile();
           case "get_user_food_entries":
-            return await this.handleGetUserFoodEntries(request.params.arguments);
+            return await this.handleGetUserFoodEntries(args as GetFoodEntriesInput | undefined);
           case "add_food_entry":
-            return await this.handleAddFoodEntry(request.params.arguments);
+            return await this.handleAddFoodEntry(args as AddFoodEntryInput);
           case "check_auth_status":
             return await this.handleCheckAuthStatus();
           case "get_weight_month":
-            return await this.handleGetWeightMonth(request.params.arguments);
+            return await this.handleGetWeightMonth(args as GetWeightMonthInput | undefined);
           case "edit_food_entry":
-            return await this.handleEditFoodEntry(request.params.arguments);
+            return await this.handleEditFoodEntry(args as EditFoodEntryInput);
           case "delete_food_entry":
-            return await this.handleDeleteFoodEntry(request.params.arguments);
+            return await this.handleDeleteFoodEntry(args as DeleteFoodEntryInput);
           case "get_food_entries_month":
-            return await this.handleGetFoodEntriesMonth(request.params.arguments);
+            return await this.handleGetFoodEntriesMonth(args as GetFoodEntriesMonthInput | undefined);
           case "update_weight":
-            return await this.handleUpdateWeight(request.params.arguments);
+            return await this.handleUpdateWeight(args as UpdateWeightInput);
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
         }
@@ -320,7 +337,7 @@ class FatSecretMCPServer {
     });
   }
 
-  private async handleSetCredentials(args: any) {
+  private async handleSetCredentials(args: SetCredentialsInput) {
     this.client.updateConfig({
       clientId: args.clientId,
       clientSecret: args.clientSecret,
@@ -335,7 +352,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleStartOAuthFlow(args: any) {
+  private async handleStartOAuthFlow(args?: StartOAuthFlowInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first using set_credentials");
     }
@@ -355,7 +372,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleCompleteOAuthFlow(args: any) {
+  private async handleCompleteOAuthFlow(args: CompleteOAuthFlowInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
@@ -381,7 +398,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleSearchFoods(args: any) {
+  private async handleSearchFoods(args: SearchFoodsInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
@@ -396,7 +413,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleGetFood(args: any) {
+  private async handleGetFood(args: GetFoodInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
@@ -408,7 +425,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleSearchRecipes(args: any) {
+  private async handleSearchRecipes(args: SearchRecipesInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
@@ -435,7 +452,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleGetRecipe(args: any) {
+  private async handleGetRecipe(args: GetRecipeInput) {
     if (!this.client.hasCredentials()) {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
@@ -455,7 +472,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleGetUserFoodEntries(args: any) {
+  private async handleGetUserFoodEntries(args?: GetFoodEntriesInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -464,7 +481,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleAddFoodEntry(args: any) {
+  private async handleAddFoodEntry(args: AddFoodEntryInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -506,7 +523,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleGetWeightMonth(args: any) {
+  private async handleGetWeightMonth(args?: GetWeightMonthInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -515,7 +532,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleEditFoodEntry(args: any) {
+  private async handleEditFoodEntry(args: EditFoodEntryInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -536,7 +553,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleDeleteFoodEntry(args: any) {
+  private async handleDeleteFoodEntry(args: DeleteFoodEntryInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -551,7 +568,7 @@ class FatSecretMCPServer {
     };
   }
 
-  private async handleGetFoodEntriesMonth(args: any) {
+  private async handleGetFoodEntriesMonth(args?: GetFoodEntriesMonthInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }
@@ -560,7 +577,7 @@ class FatSecretMCPServer {
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
-  private async handleUpdateWeight(args: any) {
+  private async handleUpdateWeight(args: UpdateWeightInput) {
     if (!this.client.hasAccessToken()) {
       throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
     }

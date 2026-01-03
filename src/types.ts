@@ -1,5 +1,109 @@
 import type { RequestInit } from "node-fetch";
 
+// Enums
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'other';
+export type WeightType = 'kg' | 'lb';
+export type HeightType = 'cm' | 'inch';
+export type RecipeSortBy = 'newest' | 'oldest' | 'caloriesPerServingAscending' | 'caloriesPerServingDescending';
+
+// Tool input types (for MCP handlers)
+export interface SetCredentialsInput {
+  clientId: string;
+  clientSecret: string;
+}
+
+export interface StartOAuthFlowInput {
+  callbackUrl?: string;
+}
+
+export interface CompleteOAuthFlowInput {
+  requestToken: string;
+  requestTokenSecret: string;
+  verifier: string;
+}
+
+export interface SearchFoodsInput {
+  searchExpression: string;
+  pageNumber?: number;
+  maxResults?: number;
+  region?: string;
+  language?: string;
+}
+
+export interface GetFoodInput {
+  foodId: string;
+  region?: string;
+  language?: string;
+}
+
+export interface SearchRecipesInput {
+  searchExpression: string;
+  recipeTypes?: string;
+  recipeTypesMatchAll?: boolean;
+  mustHaveImages?: boolean;
+  pageNumber?: number;
+  maxResults?: number;
+  caloriesFrom?: number;
+  caloriesTo?: number;
+  carbPercentageFrom?: number;
+  carbPercentageTo?: number;
+  proteinPercentageFrom?: number;
+  proteinPercentageTo?: number;
+  fatPercentageFrom?: number;
+  fatPercentageTo?: number;
+  prepTimeFrom?: number;
+  prepTimeTo?: number;
+  sortBy?: RecipeSortBy;
+}
+
+export interface GetRecipeInput {
+  recipeId: string;
+  language?: string;
+}
+
+export interface GetFoodEntriesInput {
+  date?: string;
+}
+
+export interface AddFoodEntryInput {
+  foodId: string;
+  foodName: string;
+  servingId: string;
+  quantity: number;
+  mealType: MealType;
+  date?: string;
+}
+
+export interface EditFoodEntryInput {
+  foodEntryId: string;
+  foodName?: string;
+  servingId?: string;
+  quantity?: number;
+  mealType?: MealType;
+}
+
+export interface DeleteFoodEntryInput {
+  foodEntryId: string;
+}
+
+export interface GetFoodEntriesMonthInput {
+  date?: string;
+}
+
+export interface GetWeightMonthInput {
+  date?: string;
+}
+
+export interface UpdateWeightInput {
+  currentWeightKg: number;
+  date?: string;
+  weightType?: WeightType;
+  heightType?: HeightType;
+  goalWeightKg?: number;
+  currentHeightCm?: number;
+  comment?: string;
+}
+
 // Config
 export interface FatSecretConfig {
   clientId: string;
@@ -26,7 +130,7 @@ export interface CreateFoodEntryParams {
   foodName: string;
   servingId: string;
   quantity: number;
-  mealType: string;
+  mealType: MealType;
   date?: string;
 }
 
@@ -35,14 +139,14 @@ export interface EditFoodEntryParams {
   foodName?: string;
   servingId?: string;
   quantity?: number;
-  mealType?: string;
+  mealType?: MealType;
 }
 
 export interface UpdateWeightParams {
   currentWeightKg: number;
   date?: string;
-  weightType?: 'kg' | 'lb';
-  heightType?: 'cm' | 'inch';
+  weightType?: WeightType;
+  heightType?: HeightType;
   goalWeightKg?: number;
   currentHeightCm?: number;
   comment?: string;
@@ -86,7 +190,7 @@ export interface SearchRecipesOptions {
   fatPercentageTo?: number;
   prepTimeFrom?: number;
   prepTimeTo?: number;
-  sortBy?: 'newest' | 'oldest' | 'caloriesPerServingAscending' | 'caloriesPerServingDescending';
+  sortBy?: RecipeSortBy;
   region?: string;
 }
 
