@@ -102,36 +102,53 @@ class FatSecretMCPServer {
           },
           {
             name: "search_foods",
-            description: "Search for foods in the FatSecret database",
+            description: "Search for foods in the FatSecret database. Returns up to 50 results per page.",
             inputSchema: {
               type: "object",
               properties: {
                 searchExpression: { type: "string", description: 'Search term for foods (e.g., "chicken breast", "apple")' },
                 pageNumber: { type: "number", description: "Page number for results (default: 0)", default: 0 },
-                maxResults: { type: "number", description: "Maximum results per page (default: 20)", default: 20 },
+                maxResults: { type: "number", description: "Maximum results per page (default: 20, max: 50)", default: 20 },
+                region: { type: "string", description: "Region filter code (default: 'US')" },
+                language: { type: "string", description: "Result language when region is set" },
               },
               required: ["searchExpression"],
             },
           },
           {
             name: "get_food",
-            description: "Get detailed information about a specific food item",
+            description: "Get detailed nutrition information for a food item. Note: Servings with serving_id=0 cannot be used for diary entries.",
             inputSchema: {
               type: "object",
               properties: {
                 foodId: { type: "string", description: "The FatSecret food ID" },
+                region: { type: "string", description: "Region filter code (default: 'US')" },
+                language: { type: "string", description: "Result language when region is set" },
               },
               required: ["foodId"],
             },
           },
           {
             name: "search_recipes",
-            description: "Search for recipes in the FatSecret database",
+            description: "Search for recipes in the FatSecret database. Returns up to 50 results per page.",
             inputSchema: {
               type: "object",
               properties: {
                 searchExpression: { type: "string", description: "Search term for recipes" },
-                recipeType: { type: "string", description: "Filter by recipe type (e.g., Appetizer, Breakfast, Dessert, Main Dish, Salad, Side Dish, Soup, Snack)" },
+                recipeTypes: { type: "string", description: "Filter by recipe types (comma-separated). Values: Appetizer, Breakfast, Dessert, Main Dish, Salad, Side Dish, Soup, Snack" },
+                recipeTypesMatchAll: { type: "boolean", description: "If true, recipes must match all types (default: false)" },
+                mustHaveImages: { type: "boolean", description: "Only return recipes with images" },
+                caloriesFrom: { type: "number", description: "Minimum calories per serving" },
+                caloriesTo: { type: "number", description: "Maximum calories per serving" },
+                carbPercentageFrom: { type: "number", description: "Minimum carb percentage of calories" },
+                carbPercentageTo: { type: "number", description: "Maximum carb percentage of calories" },
+                proteinPercentageFrom: { type: "number", description: "Minimum protein percentage of calories" },
+                proteinPercentageTo: { type: "number", description: "Maximum protein percentage of calories" },
+                fatPercentageFrom: { type: "number", description: "Minimum fat percentage of calories" },
+                fatPercentageTo: { type: "number", description: "Maximum fat percentage of calories" },
+                prepTimeFrom: { type: "number", description: "Minimum prep time in minutes" },
+                prepTimeTo: { type: "number", description: "Maximum prep time in minutes" },
+                sortBy: { type: "string", enum: ["newest", "oldest", "caloriesPerServingAscending", "caloriesPerServingDescending"], description: "Sort order for results" },
                 pageNumber: { type: "number", description: "Page number for results (default: 0)", default: 0 },
                 maxResults: { type: "number", description: "Maximum results per page (default: 20, max: 50)", default: 20 },
               },
@@ -140,23 +157,24 @@ class FatSecretMCPServer {
           },
           {
             name: "get_recipe",
-            description: "Get detailed information about a specific recipe",
+            description: "Get detailed information about a specific recipe including ingredients and instructions.",
             inputSchema: {
               type: "object",
               properties: {
                 recipeId: { type: "string", description: "The FatSecret recipe ID" },
+                language: { type: "string", description: "Result language" },
               },
               required: ["recipeId"],
             },
           },
           {
             name: "get_user_profile",
-            description: "Get the authenticated user's profile information",
+            description: "Get the authenticated user's profile information. Requires OAuth authentication.",
             inputSchema: { type: "object", properties: {} },
           },
           {
             name: "get_user_food_entries",
-            description: "Get user's food diary entries for a specific date",
+            description: "Get user's food diary entries for a specific date. Requires OAuth authentication.",
             inputSchema: {
               type: "object",
               properties: {
@@ -166,14 +184,14 @@ class FatSecretMCPServer {
           },
           {
             name: "add_food_entry",
-            description: "Add a food entry to the user's diary",
+            description: "Add a food entry to the user's food diary. Requires OAuth authentication. Quantity must be greater than 0.",
             inputSchema: {
               type: "object",
               properties: {
                 foodId: { type: "string", description: "The FatSecret food ID" },
                 foodName: { type: "string", description: "Name/description of the food item" },
                 servingId: { type: "string", description: "The serving ID for the food" },
-                quantity: { type: "number", description: "Quantity of the serving" },
+                quantity: { type: "number", description: "Quantity of the serving (must be > 0)" },
                 mealType: { type: "string", description: "Meal type (breakfast, lunch, dinner, other)", enum: ["breakfast", "lunch", "dinner", "other"] },
                 date: { type: "string", description: "Date in YYYY-MM-DD format (default: today)" },
               },
@@ -187,7 +205,7 @@ class FatSecretMCPServer {
           },
           {
             name: "get_weight_month",
-            description: "Get user's weight entries for a specific month",
+            description: "Get user's weight entries for a specific month. Requires OAuth authentication.",
             inputSchema: {
               type: "object",
               properties: {
@@ -197,14 +215,14 @@ class FatSecretMCPServer {
           },
           {
             name: "edit_food_entry",
-            description: "Edit an existing food diary entry",
+            description: "Edit an existing food diary entry. Requires OAuth authentication. Note: Entry date cannot be changed.",
             inputSchema: {
               type: "object",
               properties: {
                 foodEntryId: { type: "string", description: "The food entry ID to edit" },
                 foodName: { type: "string", description: "New name/description for the food entry" },
                 servingId: { type: "string", description: "New serving ID" },
-                quantity: { type: "number", description: "New quantity" },
+                quantity: { type: "number", description: "New quantity (must be > 0)" },
                 mealType: { type: "string", description: "New meal type (breakfast, lunch, dinner, other)", enum: ["breakfast", "lunch", "dinner", "other"] },
               },
               required: ["foodEntryId"],
@@ -212,7 +230,7 @@ class FatSecretMCPServer {
           },
           {
             name: "delete_food_entry",
-            description: "Delete a food diary entry",
+            description: "Delete a food diary entry. Requires OAuth authentication.",
             inputSchema: {
               type: "object",
               properties: {
@@ -223,7 +241,7 @@ class FatSecretMCPServer {
           },
           {
             name: "get_food_entries_month",
-            description: "Get summary of user's food diary entries for a month",
+            description: "Get summary of user's food diary entries for a month. Returns daily totals of calories and macros. Requires OAuth authentication.",
             inputSchema: {
               type: "object",
               properties: {
@@ -233,13 +251,16 @@ class FatSecretMCPServer {
           },
           {
             name: "update_weight",
-            description: "Add or update a weight entry",
+            description: "Add or update a weight entry for today. Requires OAuth authentication. Weight must be > 0. For first weigh-in, height may be required.",
             inputSchema: {
               type: "object",
               properties: {
-                currentWeightKg: { type: "number", description: "Current weight in kilograms" },
-                date: { type: "string", description: "Date in YYYY-MM-DD format (default: today)" },
+                currentWeightKg: { type: "number", description: "Current weight in kilograms (must be > 0)" },
+                date: { type: "string", description: "Date in YYYY-MM-DD format (default: today). Note: Only today's date is supported." },
+                weightType: { type: "string", enum: ["kg", "lb"], description: "Weight measurement unit (default: 'kg')" },
+                heightType: { type: "string", enum: ["cm", "inch"], description: "Height measurement unit (default: 'cm')" },
                 goalWeightKg: { type: "number", description: "Goal weight in kilograms" },
+                currentHeightCm: { type: "number", description: "Current height in cm (required for first weigh-in)" },
                 comment: { type: "string", description: "Optional comment for the weight entry" },
               },
               required: ["currentWeightKg"],
@@ -368,6 +389,8 @@ class FatSecretMCPServer {
     const response = await this.client.searchFoods(args.searchExpression, {
       pageNumber: args.pageNumber,
       maxResults: args.maxResults,
+      region: args.region,
+      language: args.language,
     });
 
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
@@ -378,7 +401,10 @@ class FatSecretMCPServer {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
 
-    const response = await this.client.getFood(args.foodId, {});
+    const response = await this.client.getFood(args.foodId, {
+      region: args.region,
+      language: args.language,
+    });
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
@@ -388,7 +414,20 @@ class FatSecretMCPServer {
     }
 
     const response = await this.client.searchRecipes(args.searchExpression, {
-      recipeTypes: args.recipeType,
+      recipeTypes: args.recipeTypes,
+      recipeTypesMatchAll: args.recipeTypesMatchAll,
+      mustHaveImages: args.mustHaveImages,
+      caloriesFrom: args.caloriesFrom,
+      caloriesTo: args.caloriesTo,
+      carbPercentageFrom: args.carbPercentageFrom,
+      carbPercentageTo: args.carbPercentageTo,
+      proteinPercentageFrom: args.proteinPercentageFrom,
+      proteinPercentageTo: args.proteinPercentageTo,
+      fatPercentageFrom: args.fatPercentageFrom,
+      fatPercentageTo: args.fatPercentageTo,
+      prepTimeFrom: args.prepTimeFrom,
+      prepTimeTo: args.prepTimeTo,
+      sortBy: args.sortBy,
       pageNumber: args.pageNumber,
       maxResults: args.maxResults,
     });
@@ -401,7 +440,9 @@ class FatSecretMCPServer {
       throw new McpError(ErrorCode.InvalidRequest, "Please set your FatSecret API credentials first");
     }
 
-    const response = await this.client.getRecipe(args.recipeId, {});
+    const response = await this.client.getRecipe(args.recipeId, {
+      language: args.language,
+    });
     return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
@@ -527,7 +568,10 @@ class FatSecretMCPServer {
     const response = await this.client.updateWeight({
       currentWeightKg: args.currentWeightKg,
       date: args.date,
+      weightType: args.weightType,
+      heightType: args.heightType,
       goalWeightKg: args.goalWeightKg,
+      currentHeightCm: args.currentHeightCm,
       comment: args.comment,
     });
 
