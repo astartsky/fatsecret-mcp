@@ -8,6 +8,8 @@ import type {
   EditSavedMealParams,
   AddSavedMealItemParams,
   EditSavedMealItemParams,
+  AddFoodFavoriteParams,
+  DeleteFoodFavoriteParams,
   SearchFoodsOptions,
   GetFoodOptions,
   SearchRecipesOptions,
@@ -33,6 +35,9 @@ import type {
   SavedMealItemAddResponseParsed,
   OAuthTokenResponseParsed,
   AccessTokenResponseParsed,
+  FavoriteFoodsResponseParsed,
+  FavoriteRecipesResponseParsed,
+  FavoriteSuccessResponseParsed,
 } from "./schemas/index.js";
 
 import * as methods from "./methods/index.js";
@@ -152,6 +157,40 @@ export class FatSecretClient {
 
   deleteSavedMealItem(savedMealItemId: string): Promise<SavedMealSuccessResponseParsed> {
     return methods.deleteSavedMealItem(this.config, savedMealItemId);
+  }
+
+  // Favorites - Foods
+  addFoodFavorite(params: AddFoodFavoriteParams): Promise<FavoriteSuccessResponseParsed> {
+    return methods.addFoodFavorite(this.config, params);
+  }
+
+  deleteFoodFavorite(params: DeleteFoodFavoriteParams): Promise<FavoriteSuccessResponseParsed> {
+    return methods.deleteFoodFavorite(this.config, params);
+  }
+
+  getFavoriteFoods(): Promise<FavoriteFoodsResponseParsed> {
+    return methods.getFavoriteFoods(this.config);
+  }
+
+  getMostEatenFoods(meal?: MealType): Promise<FavoriteFoodsResponseParsed> {
+    return methods.getMostEatenFoods(this.config, meal);
+  }
+
+  getRecentlyEatenFoods(meal?: MealType): Promise<FavoriteFoodsResponseParsed> {
+    return methods.getRecentlyEatenFoods(this.config, meal);
+  }
+
+  // Favorites - Recipes
+  addRecipeFavorite(recipeId: string): Promise<FavoriteSuccessResponseParsed> {
+    return methods.addRecipeFavorite(this.config, recipeId);
+  }
+
+  deleteRecipeFavorite(recipeId: string): Promise<FavoriteSuccessResponseParsed> {
+    return methods.deleteRecipeFavorite(this.config, recipeId);
+  }
+
+  getFavoriteRecipes(): Promise<FavoriteRecipesResponseParsed> {
+    return methods.getFavoriteRecipes(this.config);
   }
 
   // OAuth

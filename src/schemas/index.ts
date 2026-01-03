@@ -76,5 +76,17 @@ export {
   type SavedMealItem,
 } from "./saved_meals.js";
 
+// Favorites schemas
+export {
+  FavoriteFoodsResponseSchema,
+  FavoriteRecipesResponseSchema,
+  FavoriteSuccessResponseSchema,
+  type FavoriteFoodsResponseParsed,
+  type FavoriteRecipesResponseParsed,
+  type FavoriteSuccessResponseParsed,
+  type FavoriteFood,
+  type FavoriteRecipe,
+} from "./favorites.js";
+
 // Error handling
 export { ApiErrorSchema, ApiValidationError, FatSecretApiError } from "./error.js";

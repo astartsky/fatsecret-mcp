@@ -14,3 +14,13 @@ export {
   editSavedMealItem,
   deleteSavedMealItem,
 } from "./saved_meals.js";
+export {
+  addFoodFavorite,
+  deleteFoodFavorite,
+  getFavoriteFoods,
+  getMostEatenFoods,
+  getRecentlyEatenFoods,
+  addRecipeFavorite,
+  deleteRecipeFavorite,
+  getFavoriteRecipes,
+} from "./favorites.js";

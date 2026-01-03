@@ -175,27 +175,27 @@
 
 ---
 
-## Phase 5: Favorites & History (8)
+## Phase 5: Favorites & History (8) - DONE
 
 ### Foods
-- [ ] Test `food.add_favorite`
-- [ ] Implement `food.add_favorite`
-- [ ] Test `food.delete_favorite`
-- [ ] Implement `food.delete_favorite`
-- [ ] Test `foods.get_favorites`
-- [ ] Implement `foods.get_favorites`
-- [ ] Test `foods.get_most_eaten`
-- [ ] Implement `foods.get_most_eaten`
-- [ ] Test `foods.get_recently_eaten`
-- [ ] Implement `foods.get_recently_eaten`
+- [x] Test `food.add_favorite`
+- [x] Implement `food.add_favorite`
+- [x] Test `food.delete_favorite`
+- [x] Implement `food.delete_favorite`
+- [x] Test `foods.get_favorites`
+- [x] Implement `foods.get_favorites`
+- [x] Test `foods.get_most_eaten`
+- [x] Implement `foods.get_most_eaten`
+- [x] Test `foods.get_recently_eaten`
+- [x] Implement `foods.get_recently_eaten`
 
 ### Recipes
-- [ ] Test `recipe.add_favorite`
-- [ ] Implement `recipe.add_favorite`
-- [ ] Test `recipe.delete_favorite`
-- [ ] Implement `recipe.delete_favorite`
-- [ ] Test `recipes.get_favorites`
-- [ ] Implement `recipes.get_favorites`
+- [x] Test `recipe.add_favorite`
+- [x] Implement `recipe.add_favorite`
+- [x] Test `recipe.delete_favorite`
+- [x] Implement `recipe.delete_favorite`
+- [x] Test `recipes.get_favorites`
+- [x] Implement `recipes.get_favorites`
 
 ---
 

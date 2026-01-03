@@ -36,6 +36,12 @@ import type {
   AddSavedMealItemInput,
   EditSavedMealItemInput,
   DeleteSavedMealItemInput,
+  AddFoodFavoriteInput,
+  DeleteFoodFavoriteInput,
+  GetMostEatenInput,
+  GetRecentlyEatenInput,
+  AddRecipeFavoriteInput,
+  DeleteRecipeFavoriteInput,
 } from "./types.js";
 
 // Suppress dotenv console output
@@ -388,6 +394,84 @@ class FatSecretMCPServer {
               required: ["savedMealItemId"],
             },
           },
+          {
+            name: "add_food_favorite",
+            description: "Add a food to user's favorites. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodId: { type: "string", description: "The food ID to add to favorites" },
+                servingId: { type: "string", description: "Optional serving ID" },
+                quantity: { type: "number", description: "Optional quantity (must be > 0)" },
+              },
+              required: ["foodId"],
+            },
+          },
+          {
+            name: "delete_food_favorite",
+            description: "Remove a food from user's favorites. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodId: { type: "string", description: "The food ID to remove from favorites" },
+                servingId: { type: "string", description: "Optional serving ID" },
+                quantity: { type: "number", description: "Optional quantity (must be > 0)" },
+              },
+              required: ["foodId"],
+            },
+          },
+          {
+            name: "get_favorite_foods",
+            description: "Get all favorite foods for the authenticated user. Requires OAuth authentication.",
+            inputSchema: { type: "object", properties: {} },
+          },
+          {
+            name: "get_most_eaten_foods",
+            description: "Get most frequently eaten foods for the authenticated user. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "other"], description: "Filter by meal type" },
+              },
+            },
+          },
+          {
+            name: "get_recently_eaten_foods",
+            description: "Get recently eaten foods for the authenticated user. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "other"], description: "Filter by meal type" },
+              },
+            },
+          },
+          {
+            name: "add_recipe_favorite",
+            description: "Add a recipe to user's favorites. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                recipeId: { type: "string", description: "The recipe ID to add to favorites" },
+              },
+              required: ["recipeId"],
+            },
+          },
+          {
+            name: "delete_recipe_favorite",
+            description: "Remove a recipe from user's favorites. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                recipeId: { type: "string", description: "The recipe ID to remove from favorites" },
+              },
+              required: ["recipeId"],
+            },
+          },
+          {
+            name: "get_favorite_recipes",
+            description: "Get all favorite recipes for the authenticated user. Requires OAuth authentication.",
+            inputSchema: { type: "object", properties: {} },
+          },
         ],
       };
     });
@@ -446,6 +530,22 @@ class FatSecretMCPServer {
             return await this.handleEditSavedMealItem(args as EditSavedMealItemInput);
           case "delete_saved_meal_item":
             return await this.handleDeleteSavedMealItem(args as DeleteSavedMealItemInput);
+          case "add_food_favorite":
+            return await this.handleAddFoodFavorite(args as AddFoodFavoriteInput);
+          case "delete_food_favorite":
+            return await this.handleDeleteFoodFavorite(args as DeleteFoodFavoriteInput);
+          case "get_favorite_foods":
+            return await this.handleGetFavoriteFoods();
+          case "get_most_eaten_foods":
+            return await this.handleGetMostEatenFoods(args as GetMostEatenInput | undefined);
+          case "get_recently_eaten_foods":
+            return await this.handleGetRecentlyEatenFoods(args as GetRecentlyEatenInput | undefined);
+          case "add_recipe_favorite":
+            return await this.handleAddRecipeFavorite(args as AddRecipeFavoriteInput);
+          case "delete_recipe_favorite":
+            return await this.handleDeleteRecipeFavorite(args as DeleteRecipeFavoriteInput);
+          case "get_favorite_recipes":
+            return await this.handleGetFavoriteRecipes();
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
         }
@@ -847,6 +947,110 @@ class FatSecretMCPServer {
         text: `Saved meal item deleted successfully!\n\n${JSON.stringify(response, null, 2)}`,
       }],
     };
+  }
+
+  private async handleAddFoodFavorite(args: AddFoodFavoriteInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.addFoodFavorite({
+      foodId: args.foodId,
+      servingId: args.servingId,
+      quantity: args.quantity,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Food added to favorites successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleDeleteFoodFavorite(args: DeleteFoodFavoriteInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.deleteFoodFavorite({
+      foodId: args.foodId,
+      servingId: args.servingId,
+      quantity: args.quantity,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Food removed from favorites successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleGetFavoriteFoods() {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getFavoriteFoods();
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleGetMostEatenFoods(args?: GetMostEatenInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getMostEatenFoods(args?.meal);
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleGetRecentlyEatenFoods(args?: GetRecentlyEatenInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getRecentlyEatenFoods(args?.meal);
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleAddRecipeFavorite(args: AddRecipeFavoriteInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.addRecipeFavorite(args.recipeId);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Recipe added to favorites successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleDeleteRecipeFavorite(args: DeleteRecipeFavoriteInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.deleteRecipeFavorite(args.recipeId);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Recipe removed from favorites successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleGetFavoriteRecipes() {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getFavoriteRecipes();
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
   }
 
   async run() {

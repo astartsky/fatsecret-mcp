@@ -148,6 +148,35 @@ export interface DeleteSavedMealItemInput {
   savedMealItemId: string;
 }
 
+// Favorites - Tool input types
+export interface AddFoodFavoriteInput {
+  foodId: string;
+  servingId?: string;
+  quantity?: number;
+}
+
+export interface DeleteFoodFavoriteInput {
+  foodId: string;
+  servingId?: string;
+  quantity?: number;
+}
+
+export interface GetMostEatenInput {
+  meal?: MealType;
+}
+
+export interface GetRecentlyEatenInput {
+  meal?: MealType;
+}
+
+export interface AddRecipeFavoriteInput {
+  recipeId: string;
+}
+
+export interface DeleteRecipeFavoriteInput {
+  recipeId: string;
+}
+
 // Config
 export interface FatSecretConfig {
   clientId: string;
@@ -221,6 +250,19 @@ export interface AddSavedMealItemParams {
 export interface EditSavedMealItemParams {
   savedMealItemId: string;
   itemName?: string;
+  quantity?: number;
+}
+
+// Favorites - Method params
+export interface AddFoodFavoriteParams {
+  foodId: string;
+  servingId?: string;
+  quantity?: number;
+}
+
+export interface DeleteFoodFavoriteParams {
+  foodId: string;
+  servingId?: string;
   quantity?: number;
 }
 
