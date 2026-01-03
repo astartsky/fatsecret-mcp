@@ -20,7 +20,7 @@
     "api",
     "oauth"
   ],
-  "author": "Your Name",
+  "author": "Dmitry Sinev <me@ast.rocks>",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.4.0",

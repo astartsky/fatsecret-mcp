@@ -22,7 +22,7 @@ A Model Context Protocol (MCP) server that provides access to the FatSecret nutr
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/fatsecret-mcp.git
+git clone https://github.com/astartsky/fatsecret-mcp.git
 cd fatsecret-mcp
 
 # Install dependencies
@@ -439,6 +439,10 @@ fatsecret-mcp/
 ├── tsconfig.json
 └── README.md
 ```
+
+## Credits
+
+Originally created by [Felipe Coury](https://github.com/fcoury). Now maintained by [Dmitry Sinev](https://github.com/astartsky).
 
 ## License
 
