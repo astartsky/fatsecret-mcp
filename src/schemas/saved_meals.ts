@@ -1,9 +1,12 @@
 import { z } from "zod";
 import { optionalSingleOrArray } from "./utils.js";
 
+// Helper to coerce number to string (API returns IDs as numbers sometimes)
+const stringOrNumber = z.union([z.string(), z.number()]).transform(val => String(val));
+
 // Saved Meal entity
 const SavedMealSchema = z.object({
-  saved_meal_id: z.string(),
+  saved_meal_id: stringOrNumber,
   saved_meal_name: z.string(),
   saved_meal_description: z.string().optional(),
   meals: z.string().optional(),
@@ -11,11 +14,11 @@ const SavedMealSchema = z.object({
 
 // Saved Meal Item entity
 const SavedMealItemSchema = z.object({
-  saved_meal_item_id: z.string(),
-  food_id: z.string(),
+  saved_meal_item_id: stringOrNumber,
+  food_id: stringOrNumber,
   saved_meal_item_name: z.string(),
-  serving_id: z.string(),
-  number_of_units: z.string(),
+  serving_id: stringOrNumber,
+  number_of_units: stringOrNumber,
 });
 
 // Response schemas

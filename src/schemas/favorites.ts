@@ -1,20 +1,23 @@
 import { z } from "zod";
 import { optionalSingleOrArray } from "./utils.js";
 
+// Helper to coerce number to string (API returns IDs as numbers sometimes)
+const stringOrNumber = z.union([z.string(), z.number()]).transform(val => String(val));
+
 // Favorite Food entity (for get_favorites, get_most_eaten, get_recently_eaten)
 const FavoriteFoodSchema = z.object({
-  food_id: z.string(),
+  food_id: stringOrNumber,
   food_name: z.string(),
   food_type: z.string(),
   food_url: z.string(),
   food_description: z.string().optional(),
-  serving_id: z.string(),
-  number_of_units: z.string(),
+  serving_id: stringOrNumber,
+  number_of_units: stringOrNumber,
 });
 
 // Favorite Recipe entity
 const FavoriteRecipeSchema = z.object({
-  recipe_id: z.string(),
+  recipe_id: stringOrNumber,
   recipe_name: z.string(),
   recipe_url: z.string(),
   recipe_description: z.string(),
