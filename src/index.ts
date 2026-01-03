@@ -28,6 +28,14 @@ import type {
   GetFoodEntriesMonthInput,
   GetWeightMonthInput,
   UpdateWeightInput,
+  GetSavedMealsInput,
+  CreateSavedMealInput,
+  EditSavedMealInput,
+  DeleteSavedMealInput,
+  GetSavedMealItemsInput,
+  AddSavedMealItemInput,
+  EditSavedMealItemInput,
+  DeleteSavedMealItemInput,
 } from "./types.js";
 
 // Suppress dotenv console output
@@ -282,6 +290,104 @@ class FatSecretMCPServer {
               required: ["currentWeightKg"],
             },
           },
+          {
+            name: "get_saved_meals",
+            description: "Get all saved meals for the authenticated user. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "other"], description: "Filter by meal type" },
+              },
+            },
+          },
+          {
+            name: "create_saved_meal",
+            description: "Create a new saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "Name of the saved meal" },
+                description: { type: "string", description: "Description of the saved meal" },
+                meals: { type: "string", description: "Comma-separated list of meal types (breakfast, lunch, dinner, other)" },
+              },
+              required: ["name"],
+            },
+          },
+          {
+            name: "edit_saved_meal",
+            description: "Edit an existing saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealId: { type: "string", description: "The saved meal ID to edit" },
+                name: { type: "string", description: "New name for the saved meal" },
+                description: { type: "string", description: "New description for the saved meal" },
+                meals: { type: "string", description: "New comma-separated list of meal types" },
+              },
+              required: ["savedMealId"],
+            },
+          },
+          {
+            name: "delete_saved_meal",
+            description: "Delete a saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealId: { type: "string", description: "The saved meal ID to delete" },
+              },
+              required: ["savedMealId"],
+            },
+          },
+          {
+            name: "get_saved_meal_items",
+            description: "Get all items in a saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealId: { type: "string", description: "The saved meal ID" },
+              },
+              required: ["savedMealId"],
+            },
+          },
+          {
+            name: "add_saved_meal_item",
+            description: "Add a food item to a saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealId: { type: "string", description: "The saved meal ID" },
+                foodId: { type: "string", description: "The food ID to add" },
+                itemName: { type: "string", description: "Name for the item" },
+                servingId: { type: "string", description: "The serving ID" },
+                quantity: { type: "number", description: "Quantity of servings (must be > 0)" },
+              },
+              required: ["savedMealId", "foodId", "itemName", "servingId", "quantity"],
+            },
+          },
+          {
+            name: "edit_saved_meal_item",
+            description: "Edit an item in a saved meal. Requires OAuth authentication. Note: serving_id cannot be changed.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealItemId: { type: "string", description: "The saved meal item ID to edit" },
+                itemName: { type: "string", description: "New name for the item" },
+                quantity: { type: "number", description: "New quantity (must be > 0)" },
+              },
+              required: ["savedMealItemId"],
+            },
+          },
+          {
+            name: "delete_saved_meal_item",
+            description: "Delete an item from a saved meal. Requires OAuth authentication.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                savedMealItemId: { type: "string", description: "The saved meal item ID to delete" },
+              },
+              required: ["savedMealItemId"],
+            },
+          },
         ],
       };
     });
@@ -324,6 +430,22 @@ class FatSecretMCPServer {
             return await this.handleGetFoodEntriesMonth(args as GetFoodEntriesMonthInput | undefined);
           case "update_weight":
             return await this.handleUpdateWeight(args as UpdateWeightInput);
+          case "get_saved_meals":
+            return await this.handleGetSavedMeals(args as GetSavedMealsInput | undefined);
+          case "create_saved_meal":
+            return await this.handleCreateSavedMeal(args as CreateSavedMealInput);
+          case "edit_saved_meal":
+            return await this.handleEditSavedMeal(args as EditSavedMealInput);
+          case "delete_saved_meal":
+            return await this.handleDeleteSavedMeal(args as DeleteSavedMealInput);
+          case "get_saved_meal_items":
+            return await this.handleGetSavedMealItems(args as GetSavedMealItemsInput);
+          case "add_saved_meal_item":
+            return await this.handleAddSavedMealItem(args as AddSavedMealItemInput);
+          case "edit_saved_meal_item":
+            return await this.handleEditSavedMealItem(args as EditSavedMealItemInput);
+          case "delete_saved_meal_item":
+            return await this.handleDeleteSavedMealItem(args as DeleteSavedMealItemInput);
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
         }
@@ -596,6 +718,133 @@ class FatSecretMCPServer {
       content: [{
         type: "text",
         text: `Weight entry updated successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleGetSavedMeals(args?: GetSavedMealsInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getSavedMeals(args?.meal);
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleCreateSavedMeal(args: CreateSavedMealInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.createSavedMeal({
+      name: args.name,
+      description: args.description,
+      meals: args.meals,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Saved meal created successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleEditSavedMeal(args: EditSavedMealInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.editSavedMeal({
+      savedMealId: args.savedMealId,
+      name: args.name,
+      description: args.description,
+      meals: args.meals,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Saved meal updated successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleDeleteSavedMeal(args: DeleteSavedMealInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.deleteSavedMeal(args.savedMealId);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Saved meal deleted successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleGetSavedMealItems(args: GetSavedMealItemsInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.getSavedMealItems(args.savedMealId);
+    return { content: [{ type: "text", text: JSON.stringify(response, null, 2) }] };
+  }
+
+  private async handleAddSavedMealItem(args: AddSavedMealItemInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.addSavedMealItem({
+      savedMealId: args.savedMealId,
+      foodId: args.foodId,
+      itemName: args.itemName,
+      servingId: args.servingId,
+      quantity: args.quantity,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Item added to saved meal successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleEditSavedMealItem(args: EditSavedMealItemInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.editSavedMealItem({
+      savedMealItemId: args.savedMealItemId,
+      itemName: args.itemName,
+      quantity: args.quantity,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text: `Saved meal item updated successfully!\n\n${JSON.stringify(response, null, 2)}`,
+      }],
+    };
+  }
+
+  private async handleDeleteSavedMealItem(args: DeleteSavedMealItemInput) {
+    if (!this.client.hasAccessToken()) {
+      throw new McpError(ErrorCode.InvalidRequest, "User authentication required. Please complete the OAuth flow first.");
+    }
+
+    const response = await this.client.deleteSavedMealItem(args.savedMealItemId);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Saved meal item deleted successfully!\n\n${JSON.stringify(response, null, 2)}`,
       }],
     };
   }

@@ -104,6 +104,50 @@ export interface UpdateWeightInput {
   comment?: string;
 }
 
+// Saved Meals - Tool input types
+export interface GetSavedMealsInput {
+  meal?: MealType;
+}
+
+export interface CreateSavedMealInput {
+  name: string;
+  description?: string;
+  meals?: string;
+}
+
+export interface EditSavedMealInput {
+  savedMealId: string;
+  name?: string;
+  description?: string;
+  meals?: string;
+}
+
+export interface DeleteSavedMealInput {
+  savedMealId: string;
+}
+
+export interface GetSavedMealItemsInput {
+  savedMealId: string;
+}
+
+export interface AddSavedMealItemInput {
+  savedMealId: string;
+  foodId: string;
+  itemName: string;
+  servingId: string;
+  quantity: number;
+}
+
+export interface EditSavedMealItemInput {
+  savedMealItemId: string;
+  itemName?: string;
+  quantity?: number;
+}
+
+export interface DeleteSavedMealItemInput {
+  savedMealItemId: string;
+}
+
 // Config
 export interface FatSecretConfig {
   clientId: string;
@@ -150,6 +194,34 @@ export interface UpdateWeightParams {
   goalWeightKg?: number;
   currentHeightCm?: number;
   comment?: string;
+}
+
+// Saved Meals - Method params
+export interface CreateSavedMealParams {
+  name: string;
+  description?: string;
+  meals?: string;
+}
+
+export interface EditSavedMealParams {
+  savedMealId: string;
+  name?: string;
+  description?: string;
+  meals?: string;
+}
+
+export interface AddSavedMealItemParams {
+  savedMealId: string;
+  foodId: string;
+  itemName: string;
+  servingId: string;
+  quantity: number;
+}
+
+export interface EditSavedMealItemParams {
+  savedMealItemId: string;
+  itemName?: string;
+  quantity?: number;
 }
 
 // NOTE: AutocompleteOptions and FindByBarcodeOptions not implemented - require OAuth 2.0

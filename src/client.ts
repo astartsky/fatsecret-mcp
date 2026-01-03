@@ -1,8 +1,13 @@
 import type {
   FatSecretConfig,
+  MealType,
   CreateFoodEntryParams,
   EditFoodEntryParams,
   UpdateWeightParams,
+  CreateSavedMealParams,
+  EditSavedMealParams,
+  AddSavedMealItemParams,
+  EditSavedMealItemParams,
   SearchFoodsOptions,
   GetFoodOptions,
   SearchRecipesOptions,
@@ -21,6 +26,11 @@ import type {
   FoodEntriesMonthResponseParsed,
   WeightMonthResponseParsed,
   WeightUpdateResponseParsed,
+  SavedMealsResponseParsed,
+  SavedMealCreateResponseParsed,
+  SavedMealSuccessResponseParsed,
+  SavedMealItemsResponseParsed,
+  SavedMealItemAddResponseParsed,
   OAuthTokenResponseParsed,
   AccessTokenResponseParsed,
 } from "./schemas/index.js";
@@ -109,6 +119,39 @@ export class FatSecretClient {
 
   updateWeight(params: UpdateWeightParams): Promise<WeightUpdateResponseParsed> {
     return methods.updateWeight(this.config, params);
+  }
+
+  // Saved Meals
+  getSavedMeals(meal?: MealType): Promise<SavedMealsResponseParsed> {
+    return methods.getSavedMeals(this.config, meal);
+  }
+
+  createSavedMeal(params: CreateSavedMealParams): Promise<SavedMealCreateResponseParsed> {
+    return methods.createSavedMeal(this.config, params);
+  }
+
+  editSavedMeal(params: EditSavedMealParams): Promise<SavedMealSuccessResponseParsed> {
+    return methods.editSavedMeal(this.config, params);
+  }
+
+  deleteSavedMeal(savedMealId: string): Promise<SavedMealSuccessResponseParsed> {
+    return methods.deleteSavedMeal(this.config, savedMealId);
+  }
+
+  getSavedMealItems(savedMealId: string): Promise<SavedMealItemsResponseParsed> {
+    return methods.getSavedMealItems(this.config, savedMealId);
+  }
+
+  addSavedMealItem(params: AddSavedMealItemParams): Promise<SavedMealItemAddResponseParsed> {
+    return methods.addSavedMealItem(this.config, params);
+  }
+
+  editSavedMealItem(params: EditSavedMealItemParams): Promise<SavedMealSuccessResponseParsed> {
+    return methods.editSavedMealItem(this.config, params);
+  }
+
+  deleteSavedMealItem(savedMealItemId: string): Promise<SavedMealSuccessResponseParsed> {
+    return methods.deleteSavedMealItem(this.config, savedMealItemId);
   }
 
   // OAuth

@@ -60,5 +60,21 @@ export {
   type WeightEntry,
 } from "./weight.js";
 
+// Saved Meals schemas
+export {
+  SavedMealsResponseSchema,
+  SavedMealCreateResponseSchema,
+  SavedMealSuccessResponseSchema,
+  SavedMealItemsResponseSchema,
+  SavedMealItemAddResponseSchema,
+  type SavedMealsResponseParsed,
+  type SavedMealCreateResponseParsed,
+  type SavedMealSuccessResponseParsed,
+  type SavedMealItemsResponseParsed,
+  type SavedMealItemAddResponseParsed,
+  type SavedMeal,
+  type SavedMealItem,
+} from "./saved_meals.js";
+
 // Error handling
 export { ApiErrorSchema, ApiValidationError, FatSecretApiError } from "./error.js";

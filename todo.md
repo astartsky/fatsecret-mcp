@@ -153,26 +153,25 @@
 
 ---
 
-## Phase 4: Saved Meals (9)
+## Phase 4: Saved Meals (8) - DONE
 
-- [ ] Test `saved_meal.create`
-- [ ] Implement `saved_meal.create`
-- [ ] Test `saved_meal.edit`
-- [ ] Implement `saved_meal.edit`
-- [ ] Test `saved_meal.delete`
-- [ ] Implement `saved_meal.delete`
-- [ ] Test `saved_meal.get`
-- [ ] Implement `saved_meal.get`
-- [ ] Test `saved_meals.get`
-- [ ] Implement `saved_meals.get`
-- [ ] Test `saved_meal_item.add`
-- [ ] Implement `saved_meal_item.add`
-- [ ] Test `saved_meal_item.edit`
-- [ ] Implement `saved_meal_item.edit`
-- [ ] Test `saved_meal_item.delete`
-- [ ] Implement `saved_meal_item.delete`
-- [ ] Test `saved_meal_items.get`
-- [ ] Implement `saved_meal_items.get`
+- [x] Test `saved_meal.create`
+- [x] Implement `saved_meal.create`
+- [x] Test `saved_meal.edit`
+- [x] Implement `saved_meal.edit`
+- [x] Test `saved_meal.delete`
+- [x] Implement `saved_meal.delete`
+- [x] ~~`saved_meal.get`~~ — не существует в API (используй `saved_meals.get`)
+- [x] Test `saved_meals.get`
+- [x] Implement `saved_meals.get`
+- [x] Test `saved_meal_item.add`
+- [x] Implement `saved_meal_item.add`
+- [x] Test `saved_meal_item.edit`
+- [x] Implement `saved_meal_item.edit`
+- [x] Test `saved_meal_item.delete`
+- [x] Implement `saved_meal_item.delete`
+- [x] Test `saved_meal_items.get`
+- [x] Implement `saved_meal_items.get`
 
 ---
 
