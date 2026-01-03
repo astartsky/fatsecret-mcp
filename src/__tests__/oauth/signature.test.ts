@@ -297,3 +297,165 @@ describe("buildOAuthParams", () => {
     }
   });
 });
+
+describe("OAuth 1.0 signature correctness", () => {
+  // Test vectors based on OAuth 1.0 RFC 5849 and Twitter's documentation
+  // These verify the signature algorithm produces correct results
+
+  it("should generate correct signature for RFC 5849 example", () => {
+    // Based on RFC 5849 Section 3.4.1.1 example (simplified)
+    const params = {
+      oauth_consumer_key: "dpf43f3p2l4k3l03",
+      oauth_nonce: "kllo9940pd9333jh",
+      oauth_signature_method: "HMAC-SHA1",
+      oauth_timestamp: "1191242096",
+      oauth_token: "nnch734d00sl2jdk",
+      oauth_version: "1.0",
+      size: "original",
+      file: "vacation.jpg",
+    };
+
+    const baseString = createSignatureBaseString(
+      "GET",
+      "http://photos.example.net/photos",
+      params
+    );
+
+    // Verify base string structure
+    expect(baseString).toContain("GET&");
+    expect(baseString).toContain("http%3A%2F%2Fphotos.example.net%2Fphotos&");
+
+    // Generate signature
+    const signature = generateSignature(
+      "GET",
+      "http://photos.example.net/photos",
+      params,
+      "kd94hf93k423kf44", // consumer secret
+      "pfkkdhi9sl3r4s00"  // token secret
+    );
+
+    // Signature should be base64 encoded HMAC-SHA1
+    expect(signature).toMatch(/^[A-Za-z0-9+/]+=*$/);
+    // Known correct signature for this test vector
+    expect(signature).toBe("tR3+Ty81lMeYAr/Fid0kMTYa/WM=");
+  });
+
+  it("should generate correct signature without token secret", () => {
+    // Test 2-legged OAuth (no user token)
+    const params = {
+      oauth_consumer_key: "test_key",
+      oauth_nonce: "abc123",
+      oauth_signature_method: "HMAC-SHA1",
+      oauth_timestamp: "1234567890",
+      oauth_version: "1.0",
+      method: "foods.search",
+      search_expression: "apple",
+    };
+
+    const signature = generateSignature(
+      "GET",
+      "https://platform.fatsecret.com/rest/server.api",
+      params,
+      "test_secret"
+      // no token secret - defaults to empty string
+    );
+
+    // Verify it's a valid base64 string
+    expect(signature).toMatch(/^[A-Za-z0-9+/]+=*$/);
+
+    // Verify same inputs produce same signature (deterministic)
+    const signature2 = generateSignature(
+      "GET",
+      "https://platform.fatsecret.com/rest/server.api",
+      params,
+      "test_secret"
+    );
+    expect(signature).toBe(signature2);
+  });
+
+  it("should handle special characters in OAuth flow correctly", () => {
+    // Test that special characters are properly percent-encoded in signature
+    const params = {
+      oauth_consumer_key: "key",
+      oauth_nonce: "nonce",
+      oauth_signature_method: "HMAC-SHA1",
+      oauth_timestamp: "1234567890",
+      oauth_version: "1.0",
+      search_expression: "cafe latte", // spaces and special chars
+    };
+
+    const signature1 = generateSignature(
+      "GET",
+      "https://api.example.com/search",
+      params,
+      "secret&key", // ampersand in secret
+      "token&secret" // ampersand in token secret
+    );
+
+    // Different parameters should yield different signature
+    const params2 = { ...params, search_expression: "espresso" };
+    const signature2 = generateSignature(
+      "GET",
+      "https://api.example.com/search",
+      params2,
+      "secret&key",
+      "token&secret"
+    );
+
+    expect(signature1).not.toBe(signature2);
+    // Both should still be valid base64
+    expect(signature1).toMatch(/^[A-Za-z0-9+/]+=*$/);
+    expect(signature2).toMatch(/^[A-Za-z0-9+/]+=*$/);
+  });
+
+  it("should correctly create base string with sorted parameters", () => {
+    const params = {
+      z_param: "last",
+      a_param: "first",
+      m_param: "middle",
+      oauth_consumer_key: "key",
+    };
+
+    const baseString = createSignatureBaseString(
+      "POST",
+      "https://api.example.com",
+      params
+    );
+
+    // Parameters should be sorted alphabetically
+    // a_param < m_param < oauth_consumer_key < z_param
+    const paramsSection = baseString.split("&")[2];
+    const decodedParams = decodeURIComponent(paramsSection);
+
+    expect(decodedParams).toBe(
+      "a_param=first&m_param=middle&oauth_consumer_key=key&z_param=last"
+    );
+  });
+
+  it("should handle POST method in signature correctly", () => {
+    const params = {
+      oauth_consumer_key: "key",
+      oauth_nonce: "nonce123",
+      oauth_signature_method: "HMAC-SHA1",
+      oauth_timestamp: "1234567890",
+      oauth_version: "1.0",
+    };
+
+    const getSignature = generateSignature(
+      "GET",
+      "https://api.example.com/resource",
+      params,
+      "secret"
+    );
+
+    const postSignature = generateSignature(
+      "POST",
+      "https://api.example.com/resource",
+      params,
+      "secret"
+    );
+
+    // GET and POST should produce different signatures
+    expect(getSignature).not.toBe(postSignature);
+  });
+});
